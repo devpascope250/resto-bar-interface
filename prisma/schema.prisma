@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+url      = env("DATABASE_URL")
+}
+
+// ================== ENUMS ==================
+enum Partnertype{
+  BAR
+  RESTAURANT
+  BARRESTAURANT
+  SUPERMARKET
+}
+
+enum Role{
+  ADMIN
+  PARTNER_ADMIN
+  WAITER
+  MANAGER
+  CHEF
+  KITCHEN
+}
+
+enum TaxStatus {
+  ENABLED
+  DISABLED
+}
+enum Status {
+  ACTIVE
+  INACTIVE
+  PENDING
+  REJECTED
+  BLOCKED
+}
+
+// ================== MODELS ==================
+
+model User {
+  id             String    @id @default(uuid())
+  role       Role
+  email          String    @unique
+  password       String
+  firstName      String
+  lastName       String
+  phone          String
+  address        String?
+  city           String?
+  country        String?
+  profilePicture String?
+  isActive       Boolean   @default(false)
+  isVerified     Boolean   @default(false)
+  lastLogin      DateTime?
+  isOnline       Boolean   @default(false)
+  deviceId       String? // Represents the current device/session ID
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  partnerId      String?
+  // Relations
+  passwordResetTokens PasswordResetToken[]
+  verificationTokens  VerificationToken[]
+  otpVerificaion      OtpVerification[] 
+
+  partner         Partner? @relation(fields: [partnerId], references: [id])
+  @@index([role])
+  @@index([email])
+  @@index([password])
+  
+}
+
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(255)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(255)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+// otp verifications
+model OtpVerification {
+  id        String   @id @default(uuid())
+  otp       String   @unique
+  verificationToken  String @unique @db.VarChar(255)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Partner {
+  id           String   @id @default(uuid())
+  partnerType   Partnertype
+  companyName   String
+  contactEmail String?  @unique
+  contactPhone String?
+  address      String?
+  topMsg       String?
+  bottomMsg    String?
+  tinNumber    String?  @unique
+  apiKey       String?  @unique
+  logoUrl      String?
+  taxRate      Float?
+  mrcCode      String?
+  taxStatus    TaxStatus @default(ENABLED)
+  status       Status   @default(PENDING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users        User[]
+  @@index([status])
+}

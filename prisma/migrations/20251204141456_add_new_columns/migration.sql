@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `partner` ADD COLUMN `address` VARCHAR(191) NULL,
+    ADD COLUMN `bottomMsg` VARCHAR(191) NULL,
+    ADD COLUMN `topMsg` VARCHAR(191) NULL;

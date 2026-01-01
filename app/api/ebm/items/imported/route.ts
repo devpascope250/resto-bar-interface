@@ -1,0 +1,59 @@
+import { EbmDataRequest } from "@/lib/EbmDataRequest";
+import { NextResponse, NextRequest } from "next/server";
+const api = process.env.BAR_BACKEND_URL;
+export async function GET(req: NextRequest) {
+    const token = req.cookies.get("access_token")?.value;
+    const ebmToken = req.headers.get("x-ebmToken-id");
+    if (!token || !ebmToken) {
+        return NextResponse.json({ error: "No token found" }, { status: 401 });
+    }
+    const start_date = req.nextUrl.searchParams.get("start_date");
+    const end_date = req.nextUrl.searchParams.get("end_date");
+    
+    try {
+        const ebmDatarequest = new EbmDataRequest(token, ebmToken);
+        const data = await ebmDatarequest.getAllImportedItems(start_date ?? "", end_date ?? "");
+        return NextResponse.json(data);
+    } catch (error) {
+        return NextResponse.json({ error: error ?? "Internal Server Error" }, { status: 500 });
+    }
+}
+
+
+export async function POST(req: NextRequest) {
+    const token = req.cookies.get("access_token")?.value;
+    const ebmToken = req.headers.get("x-ebmToken-id");
+    if (!token || !ebmToken) {
+        return NextResponse.json({ error: "No token found" }, { status: 401 });
+    }
+    // /products/import/items
+    try {
+        const impo = await req.json();
+        const imports = await fetch(`${api}/products/import/items`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "EbmToken": `Bearer ${ebmToken}`
+                },
+                body: JSON.stringify(impo)
+            }
+        );
+       
+        
+        //  resultCd: "000" | "001" | "881" | "882" | "883" | "884" | "894",
+        //     resultDt: string;
+        //     resultMsg: string;
+        const data = await imports.json();
+        if (imports.status !== 200) {
+            return NextResponse.json({ message: data.message ?? data?.error?.resultMsg }, { status: 500 });
+        } else {
+            return NextResponse.json({ message: data.message ?? data?.resultMsg }, { status: 200 });
+        }
+    } catch (error) {
+        console.log(error);
+        
+        return NextResponse.json({ message: error ?? "Internal Server Error" }, { status: 500 });
+    }
+}
