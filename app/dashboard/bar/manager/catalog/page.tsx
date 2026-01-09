@@ -19,9 +19,11 @@ import { cn } from "@/lib/utils";
 import { useApi } from "@/hooks/api-hooks";
 import { useSearchParams, useRouter } from "next/navigation";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useAuthStore } from "@/lib/store/auth-store";
 export default function CatalogPage() {
   const addItem = useCartStore((state) => state.addItem);
   const ClearCart = useCartStore((state) => state.clearCart);
+  const { user } = useAuthStore();
   const items = useCartStore((state) => state.items);
   const { useApiQuery, api } = useApi();
   const {
@@ -39,10 +41,10 @@ export default function CatalogPage() {
   const hasCartItems = items.length > 0;
   const [hasSynced, setHasSynced] = useState(false);
   const categories = products
-    ? ["all", ...new Set(products.map((p) => p.productType))]
+    ? ["all", ...new Set(user?.taxStatus === "ENABLED" ? products.filter((p) => p.taxTyCd !== "D").map((p) => p.productType) : products.filter((p) => p.taxTyCd === "D").map((p) => p.productType))]
     : ["all"];
   const router = useRouter();
-  const filteredProducts = products?.filter((product) => {
+  const filteredProducts = products?.filter((product) => user?.taxStatus === "ENABLED" ? product.taxTyCd !== "D" : product.taxTyCd === "D")?.filter((product) => {
     const matchesSearch =
       product?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product?.description?.toLowerCase().includes(searchQuery.toLowerCase());

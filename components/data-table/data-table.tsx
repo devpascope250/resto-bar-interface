@@ -178,7 +178,7 @@ export function DataTable<TData, TValue>({
                           setStartDate(range?.from || null);
                           setEndDate(range?.to || null);
                         }}
-                        initialFocus
+                        autoFocus
                       />
                     </div>
                     {(startDate || endDate) && (

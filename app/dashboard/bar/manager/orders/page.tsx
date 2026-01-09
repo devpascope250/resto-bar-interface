@@ -22,8 +22,13 @@ import OrderDetailsDialog from "@/components/orders/order-details";
 import { useCartStore } from "@/lib/store/cart-store";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import ViewGeneratedInvoiceDialog, { ViewInvoiceDialog } from "@/components/orders/generated-invoice";
+import ViewGeneratedInvoiceDialog, {
+  ViewInvoiceDialog,
+} from "@/components/orders/generated-invoice";
 import { LocalStorage } from "@/lib/local-storage";
+import { Bell, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 export default function OrdersPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
@@ -33,9 +38,13 @@ export default function OrdersPage() {
   );
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const clearCart = useCartStore((state) => state.clearCart);
   const [editOrderId, setSelectOrderId] = useState<number | null>(null);
-  const [viewgenInvOrderId, setVewgenInvOrderId] = useState<number | null>(null);
+  const [viewgenInvOrderId, setVewgenInvOrderId] = useState<number | null>(
+    null
+  );
   const [filterEndDate, setFilterEndDate] = useState<Date | string | null>(
     null
   );
@@ -56,7 +65,7 @@ export default function OrdersPage() {
     ["get-order-details", editOrderId],
     `/bar/orders/${editOrderId?.toString()}?orderDetail=true`,
     {
-      enabled: (editOrderId !== null),
+      enabled: editOrderId !== null,
       placeholderData: keepPreviousData,
     }
   );
@@ -66,18 +75,17 @@ export default function OrdersPage() {
     if (searchParams.get("view-details")) {
       setSelectOrderId(Number(searchParams.get("view-details")));
     }
-  },[searchParams]);
+  }, [searchParams]);
 
-   useEffect(() => {
-
-     if (searchParams.get("uh8c6sp7sjvn7u4wnp2w")) {
+  useEffect(() => {
+    if (searchParams.get("uh8c6sp7sjvn7u4wnp2w")) {
       setVewgenInvOrderId(Number(searchParams.get("uh8c6sp7sjvn7u4wnp2w")));
-    }else{
-      if(LocalStorage.getItem("CurrentCopy")){
-        LocalStorage.removeItem("CurrentCopy")
+    } else {
+      if (LocalStorage.getItem("CurrentCopy")) {
+        LocalStorage.removeItem("CurrentCopy");
       }
     }
-  },[searchParams]);
+  }, [searchParams]);
 
   const debouncedDateFilterChange = useDebounce(
     (start: Date | null, end: Date | null) => {
@@ -92,6 +100,7 @@ export default function OrdersPage() {
     data: orders,
     isLoading,
     isRefetching,
+    isFetched,
     refetch,
   } = useApiQuery<DisplayOrder[]>(
     ["orders", filterStartDate, filterEndDate],
@@ -108,6 +117,7 @@ export default function OrdersPage() {
       staleTime: 5 * 60 * 1000, // 👈 Data stays fresh for 5 minutes
       placeholderData: keepPreviousData,
       retry: false,
+      refetchInterval: 10000
     }
   );
   const { mutateAsync: updateStatus } = useApiPut(
@@ -141,23 +151,47 @@ export default function OrdersPage() {
       });
     }
   };
-  
+
   const pendingOrders = orders?.filter((o) => o.status === "PENDING");
   const concelledOrders = orders?.filter((o) => o.status === "CANCELLED");
   const completedOrders = orders?.filter((o) => o.status === "COMPLETED");
   const totalOrders = orders?.length;
 
-  if (isLoading) {
-    return (
-      <div className="p-8">
-        <div className="mb-8">
-          <Skeleton className="mb-2 h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <Skeleton className="h-96 w-full" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isFetched) {
+      const pendingCount = orders?.filter(
+        (order) => order.status === "PENDING"
+      ).length;
+      if (pendingCount && pendingCount > newOrdersCount) {
+        setNewOrdersCount(pendingCount);
+        toast({
+          title: "New Orders!",
+          description: `${pendingCount - newOrdersCount} new order(s) received`,
+          variant: "info",
+        });
+      }
+    }
+  }, [isFetched, orders, newOrdersCount, toast]);
+
+  // Play sound for new orders
+  useEffect(() => {
+    if (soundEnabled && newOrdersCount > 0) {
+      const audio = new Audio("/order-notif.wav");
+      audio.play().catch(() => {});
+    }
+  }, [newOrdersCount, soundEnabled]);
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="p-8">
+  //       <div className="mb-8">
+  //         <Skeleton className="mb-2 h-8 w-64" />
+  //         <Skeleton className="h-4 w-96" />
+  //       </div>
+  //       <Skeleton className="h-96 w-full" />
+  //     </div>
+  //   );
+  // }
 
   const handleDateFilterChange = (
     startDate: Date | null,
@@ -188,10 +222,10 @@ export default function OrdersPage() {
     setSelectOrderId(null);
   };
 
-  const handleCloseReceiptVew =() => {
+  const handleCloseReceiptVew = () => {
     router.push("/dashboard/bar/manager/orders");
     setVewgenInvOrderId(null);
-  }
+  };
 
   const handleChangeOrderItemStatus = async (
     itemId: number,
@@ -246,14 +280,41 @@ export default function OrdersPage() {
 
   return (
     <>
-      <div className="p-8">
-        <div className="mb-8">
+      <div className="p-6 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
           <h1 className="text-3xl font-bold text-foreground">
             Orders Management
           </h1>
           <p className="text-muted-foreground">
             View and manage all orders from distributors
           </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+            >
+              <RefreshCw
+                className={cn("h-4 w-4 mr-2", isRefetching && "animate-spin")}
+              />
+              Refresh
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+            >
+              <Bell
+                className={cn("h-4 w-4 mr-2", soundEnabled && "text-green-500")}
+              />
+              {soundEnabled ? "Mute" : "Unmute"}
+            </Button>
+          </div>
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-4">
@@ -387,9 +448,7 @@ export default function OrdersPage() {
       <OrderDetailsDialog
         open={editOrderId !== null}
         onEditOrder={(id) => {
-          router.push(
-            `/dashboard/bar/manager/catalog?orders=${id.toString()}`
-          );
+          router.push(`/dashboard/bar/manager/catalog?orders=${id.toString()}`);
         }}
         onConfirmAll={handleConfirmAll}
         loadingButton={
@@ -403,9 +462,13 @@ export default function OrdersPage() {
         order={getOrder ?? null}
         onOpenChange={handleOpen}
         isLoading={isLoadingDetails}
-        viewgenInvOrderId={viewgenInvOrderId!==null}
+        viewgenInvOrderId={viewgenInvOrderId !== null}
       />
-      <ViewInvoiceDialog open={viewgenInvOrderId!==null} onOpenChange={handleCloseReceiptVew} order={orders?.find((order) => order.id === viewgenInvOrderId)} />
+      <ViewInvoiceDialog
+        open={viewgenInvOrderId !== null}
+        onOpenChange={handleCloseReceiptVew}
+        order={orders?.find((order) => order.id === viewgenInvOrderId)}
+      />
     </>
   );
 }

@@ -42,6 +42,11 @@ export async function authmiddleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
+   // if url with /dashboard/bar/workers/
+  if ((req.nextUrl.pathname.startsWith('/dashboard/bar/chef') && decoded.role !== 'CHEF') ) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+
     // if url with /bar-restaurant
   if ((req.nextUrl.pathname.startsWith('/bar-restaurant/') && decoded.role !== 'MANAGER') || (req.nextUrl.pathname.startsWith('/bar-restaurant/') && decoded.role !== 'WAITER') || (req.nextUrl.pathname.startsWith('/bar-restaurant/') && decoded.role !== 'PARTNER_ADMIN') || (req.nextUrl.pathname.startsWith('/bar-restaurant/') && decoded.role !== 'CHEF') || (req.nextUrl.pathname.startsWith('/bar-restaurant/') && decoded.role !== 'KITCHEN')) {
     return NextResponse.redirect(new URL('/', req.url));

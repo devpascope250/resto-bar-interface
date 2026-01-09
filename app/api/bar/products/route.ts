@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
         );
 
         const data = await products.json();
+        console.log(data);
+        
         // check status code
         if(products.status === 200) {
             return NextResponse.json(data);

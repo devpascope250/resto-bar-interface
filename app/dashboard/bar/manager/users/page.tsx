@@ -79,7 +79,7 @@ const [selectedUser, setSelectedUser] = useState<Partial<User> | null>(null)
 
       <Card>
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={users ?? []} searchKey="firstName" searchPlaceholder="Search users..." />
+          <DataTable columns={columns as any} data={users ?? []} searchKey="firstName" searchPlaceholder="Search users..." />
         </CardContent>
       </Card>
 

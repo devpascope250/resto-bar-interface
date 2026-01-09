@@ -35,6 +35,29 @@ enum Status {
   REJECTED
   BLOCKED
 }
+enum BillingCycle {
+  MONTHLY
+  HALFYEARLY
+  YEARLY
+}
+
+enum subscriptionStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  EXPIRED
+  CANCELLED
+}
+
+enum Currency {
+  RWF
+  USD
+  EUR
+  UGX
+  KES
+  TZS
+  
+}
 
 // ================== MODELS ==================
 
@@ -120,5 +143,43 @@ model Partner {
   updatedAt    DateTime @updatedAt
 
   users        User[]
+  subscriptions Subscription[]
   @@index([status])
+}
+
+model Packages {
+  id           String   @id
+  name         String
+  description  String
+  price        Float
+  billingCycle  BillingCycle
+  currency     Currency
+  ebmFeature   Boolean @default(false)
+  posFeature   Boolean @default(false)
+  status       Status   @default(PENDING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  subscriptions Subscription[]
+
+  @@map("packages")
+
+}
+
+model Subscription {
+  id           String   @id @default(uuid())
+  partner      Partner @relation(fields: [partnerId], references: [id])
+  partnerId    String
+  package      Packages @relation(fields: [packageId], references: [id])
+  packageId    String
+  itemCount    Int      @default(1)
+  price        Float
+  startDate    DateTime?
+  endDate      DateTime?
+  subscriptionStatus subscriptionStatus @default(PENDING)
+  autoRenew    Boolean   @default(false)
+  transactionId String   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("subscriptions")
 }

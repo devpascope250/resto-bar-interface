@@ -31,7 +31,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageLibraryDialog } from "./image-library-dialog"; // Import the new component
 import { Switch } from "../ui/switch";
 import { UtilData } from "@/lib/utile-data";
-import { TaxStatus, User } from "@prisma/client";
 import { useAuthStore } from "@/lib/store/auth-store";
 interface AddProductDialogProps {
   onProductAdded?: () => void;
@@ -59,11 +58,11 @@ export function AddProductDialog({
 
   const [searchingItemCls, setSearchingItemCls] = useState("");
   const [searchingorgnNatCd, setSearchingorgnNatCd] = useState("");
-  const [searchinqtyUnitCdes, setSearchingqtyUnitCdes] = useState(""); 
+  const [searchinqtyUnitCdes, setSearchingqtyUnitCdes] = useState("");
   const [searchinqtytaxTyCdes, setSearchinqtytaxTyCdes] = useState("");
   const [searchinPkgUnitCdes, setSearchingPkgUnitCdes] = useState("");
   // get item codes
- const [selectedProd, setSelectedProd] = useState<Product | null>(
+  const [selectedProd, setSelectedProd] = useState<Product | null>(
     selectedProduct || null
   );
 
@@ -81,7 +80,7 @@ export function AddProductDialog({
     }
   );
 
-    const { data: itemTypes, isLoading: isiTemLoading } = useApiQuery(
+  const { data: itemTypes, isLoading: isiTemLoading } = useApiQuery(
     ["item-type"],
     "/ebm/codes/cdClsNm/Item Type",
     {
@@ -113,7 +112,7 @@ export function AddProductDialog({
       searchinqtyUnitCdes ? `?query=${searchinqtyUnitCdes}` : ""
     }`,
     {
-      enabled: open &&!!orgnNatCdes,
+      enabled: open && !!orgnNatCdes,
     }
   );
 
@@ -131,8 +130,7 @@ export function AddProductDialog({
     }
   );
 
-
-    const {
+  const {
     data: pkgUnitCdes,
     isLoading: isLoadingpkgUnitCdes,
     isRefetching: isRefetchinpkgUnitCdes,
@@ -146,27 +144,22 @@ export function AddProductDialog({
     }
   );
 
-
-      const { data: latest_item_code, isLoading: isLoadingLetestItemCode } = useApiQuery<string>(
-    ["latest-item-code"],
-    "/ebm/items/latest-item-code",
-    {
+  const { data: latest_item_code, isLoading: isLoadingLetestItemCode } =
+    useApiQuery<string>(["latest-item-code"], "/ebm/items/latest-item-code", {
       enabled: open && !!pkgUnitCdes,
-    }
-  );
+    });
 
-    const { data: categories, isLoading: isCategoriesLoading } = useApiQuery<
+  const { data: categories, isLoading: isCategoriesLoading } = useApiQuery<
     BeverageCategory[]
   >(["bvg-category"], "/bar/beverage-category", {
     enabled: open && !!latest_item_code,
   });
 
- 
   const { mutateAsync: updateProduct, isPending: updatingProduct } = useApiPut(
     ["products"],
     `/bar/products/${selectedProd?.id}`
   );
-  
+
   useEffect(() => {
     if (!selectedProduct) return;
     setSelectedProd(selectedProduct);
@@ -180,6 +173,31 @@ export function AddProductDialog({
       setIsEdit(true);
     }
   }, [selectedProd]);
+
+  const validationSchemaWithoutEb = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    price: Yup.number()
+      .min(0, "Price must be greater than 0")
+      .required("Price is required"),
+    productType: Yup.string().required("Category is required"),
+    beverageSize: Yup.string().when("productType", {
+      is: "BEVERAGE",
+      then: (schema) =>
+        schema
+          .required("Beverage size is required")
+          .oneOf(
+            ["SMALL", "MEDIUM", "LARGE", "XL", "NORMAL"],
+            "Invalid beverage size"
+          ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    beverageCategoryId: Yup.string().when("productType", {
+      is: "BEVERAGE",
+      then: (schema) => schema.required("Beverage category is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    description: Yup.string(),
+  });
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Name is required"),
@@ -225,9 +243,9 @@ export function AddProductDialog({
       ...(selectedProd === null ? { qtyUnitCd: "" } : {}),
       ...(selectedProd === null ? { taxTyCd: "" } : {}),
       ...(selectedProd === null ? { btchNo: "" } : {}),
-      ...(selectedProd === null ? {bcd: ""} : {}),
-      ...(selectedProd === null ? {isrcAplcbYn: false} : {}),
-      ...(selectedProd === null ? { useYn : false} : {}),
+      ...(selectedProd === null ? { bcd: "" } : {}),
+      ...(selectedProd === null ? { isrcAplcbYn: false } : {}),
+      ...(selectedProd === null ? { useYn: false } : {}),
       productType: selectedProd?.productType || "",
       name: selectedProd?.name || "",
       beverageSize: selectedProd?.beverageSize || "",
@@ -238,7 +256,8 @@ export function AddProductDialog({
       beverageCategoryId: selectedProd?.beverageCategory?.id?.toString() || "",
       beverageCat: selectedProd?.beverageCategory?.type || "",
     },
-    validationSchema: validationSchema,
+    validationSchema:
+      selectedProd !== null ? validationSchemaWithoutEb : validationSchema,
     onSubmit: async (values) => {
       const formData = new FormData();
       if (values.itemClsCd) formData.append("itemClsCd", values.itemClsCd);
@@ -249,7 +268,7 @@ export function AddProductDialog({
       if (values.taxTyCd) formData.append("taxTyCd", values.taxTyCd);
       if (values.btchNo) formData.append("btchNo", values.btchNo);
       if (values.bcd) formData.append("bcd", values.bcd);
-      if(values.pkgUnitCd) formData.append("pkgUnitCd", values.pkgUnitCd);
+      if (values.pkgUnitCd) formData.append("pkgUnitCd", values.pkgUnitCd);
       if (values.isrcAplcbYn)
         formData.append("isrcAplcbYn", values.isrcAplcbYn === true ? "Y" : "N");
       if (values.useYn)
@@ -315,6 +334,7 @@ export function AddProductDialog({
             onProductAdded?.();
           })
           .catch((error) => {
+            
             toast({
               title: "Error creating product",
               description: error.message,
@@ -375,8 +395,8 @@ export function AddProductDialog({
       }
     }, 500);
   };
- 
-const handleSearchOrignCount = (value: string) => {
+
+  const handleSearchOrignCount = (value: string) => {
     // Clear previous timeout
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -390,9 +410,9 @@ const handleSearchOrignCount = (value: string) => {
         setSearchingorgnNatCd(value);
       }
     }, 500);
-}
+  };
 
-const handleSearchQuatyUnity = (value: string) => {
+  const handleSearchQuatyUnity = (value: string) => {
     // Clear previous timeout
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -406,10 +426,9 @@ const handleSearchQuatyUnity = (value: string) => {
         setSearchingqtyUnitCdes(value);
       }
     }, 500);
-}
+  };
 
-
-const handleSearchTaxationtype = (value: string) => {
+  const handleSearchTaxationtype = (value: string) => {
     // Clear previous timeout
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -423,11 +442,10 @@ const handleSearchTaxationtype = (value: string) => {
         setSearchinqtytaxTyCdes(value);
       }
     }, 500);
-}
+  };
 
-
-const handleSearchPkgUnit = (value: string) => {
-   // Clear previous timeout
+  const handleSearchPkgUnit = (value: string) => {
+    // Clear previous timeout
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -440,15 +458,21 @@ const handleSearchPkgUnit = (value: string) => {
         setSearchingPkgUnitCdes(value);
       }
     }, 500);
-}
+  };
 
-const generateNewItem = new UtilData();
-  useEffect(()=> {
-    console.log();
-    
-   formik.setFieldValue("itemCd",generateNewItem.generateItemCode(formik.values.orgnNatCd ?? "", formik.values.itemTyCd ?? "", formik.values.pkgUnitCd ?? "", formik.values.qtyUnitCd ?? "", latest_item_code));
-    
-  },[formik.values])
+  const generateNewItem = new UtilData();
+  useEffect(() => {
+    formik.setFieldValue(
+      "itemCd",
+      generateNewItem.generateItemCode(
+        formik.values.orgnNatCd ?? "",
+        formik.values.itemTyCd ?? "",
+        formik.values.pkgUnitCd ?? "",
+        formik.values.qtyUnitCd ?? "",
+        latest_item_code
+      )
+    );
+  }, [formik.values]);
   return (
     <>
       <Dialog open={open || isEdit} onOpenChange={handleOpenChange}>
@@ -505,158 +529,205 @@ const generateNewItem = new UtilData();
 
           <form onSubmit={formik.handleSubmit}>
             <div className="grid gap-4 py-4">
-              {
-                selectedProd === null ? (
-                  <div className="grid grid-cols-3 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification"> Item Class <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onInputChange={handleSearchItemClsCd}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("itemClsCd", value.value);
-                    }}
-                    isLoading={isItemCodesLoading || isRefetchingItemCode}
-                    name="itemClsCd"
-                    id="itemClsCd"
-                    options={
-                      itemCodes
-                        ? (itemCodes as any).slice(0, 20).map((item: any) => ({
-                            value: item.itemClsCd,
-                            label: item.itemClsNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.itemClsCd && formik.errors.itemClsCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification">Item Type <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("itemTyCd", value.value);
-                    }}
-                    isLoading={isiTemLoading}
-                    name="itemTyCd"
-                    id="itemTyCd"
-                    options={
-                      itemTypes
-                        ? (itemTypes as any).map((item: any) => ({
-                            value: item.cd,
-                            label: item.cdNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.itemTyCd && formik.errors.itemTyCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification">Origin Country <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onInputChange={handleSearchOrignCount}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("orgnNatCd", value.value);
-                    }}
-                    isLoading={
-                      isLoadingorgnNatCodesLoading || isRefetchingorgnNatCd
-                    }
-                    name="orgnNatCd"
-                    id="orgnNatCd"
-                    options={
-                      orgnNatCdes
-                        ? (orgnNatCdes as any).map((item: any) => ({
-                            value: item.cd,
-                            label: item.cdNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.orgnNatCd && formik.errors.orgnNatCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
-                </div>
+              {selectedProd === null ? (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      {" "}
+                      Item Class{" "}
+                      <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onInputChange={handleSearchItemClsCd}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("itemClsCd", value.value);
+                      }}
+                      isLoading={isItemCodesLoading || isRefetchingItemCode}
+                      name="itemClsCd"
+                      id="itemClsCd"
+                      options={
+                        itemCodes
+                          ? (itemCodes as any)
+                              .slice(0, 20)
+                              .map((item: any) => ({
+                                value: item.itemClsCd,
+                                label: item.itemClsNm,
+                              }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.itemClsCd && formik.errors.itemClsCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      Item Type <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("itemTyCd", value.value);
+                      }}
+                      isLoading={isiTemLoading}
+                      name="itemTyCd"
+                      id="itemTyCd"
+                      options={
+                        itemTypes
+                          ? (itemTypes as any).map((item: any) => ({
+                              value: item.cd,
+                              label: item.cdNm,
+                            }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.itemTyCd && formik.errors.itemTyCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      Origin Country{" "}
+                      <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onInputChange={handleSearchOrignCount}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("orgnNatCd", value.value);
+                      }}
+                      isLoading={
+                        isLoadingorgnNatCodesLoading || isRefetchingorgnNatCd
+                      }
+                      name="orgnNatCd"
+                      id="orgnNatCd"
+                      options={
+                        orgnNatCdes
+                          ? (orgnNatCdes as any).map((item: any) => ({
+                              value: item.cd,
+                              label: item.cdNm,
+                            }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.orgnNatCd && formik.errors.orgnNatCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification">Quantity Unity <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onInputChange={handleSearchQuatyUnity}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("qtyUnitCd", value.value);
-                    }}
-                    isLoading={isLoadingQtyUnitCdes || isRefetchinQtyUnitCdes}
-                    name="qtyUnitCd"
-                    id="qtyUnitCd"
-                    options={
-                      qtyUnitCdes
-                        ? (qtyUnitCdes as any).map((item: any) => ({
-                            value: item.cd,
-                            label: item.cdNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.qtyUnitCd && formik.errors.qtyUnitCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
-                </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      Quantity Unity{" "}
+                      <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onInputChange={handleSearchQuatyUnity}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("qtyUnitCd", value.value);
+                      }}
+                      isLoading={isLoadingQtyUnitCdes || isRefetchinQtyUnitCdes}
+                      name="qtyUnitCd"
+                      id="qtyUnitCd"
+                      options={
+                        qtyUnitCdes
+                          ? (qtyUnitCdes as any).map((item: any) => ({
+                              value: item.cd,
+                              label: item.cdNm,
+                            }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.qtyUnitCd && formik.errors.qtyUnitCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification">Tax Type <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onInputChange={handleSearchTaxationtype}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("taxTyCd", value.value);
-                    }}
-                    isLoading={isLoadingTaxTyCdes || isRefetchinTaxTyCdes}
-                    name="taxTyCd"
-                    id="taxTyCd"
-                    options={
-                      taxTyCdes
-                        ? (taxTyCdes as any[]).filter((item) => (user?.taxStatus === "ENABLED" ? item.cd !== "D" : item.cd === "D")) .map((item: any) => ({
-                            value: item.cd,
-                            label: item.cdNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.taxTyCd && formik.errors.taxTyCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
-                </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      Tax Type <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onInputChange={handleSearchTaxationtype}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("taxTyCd", value.value);
+                      }}
+                      isLoading={isLoadingTaxTyCdes || isRefetchinTaxTyCdes}
+                      name="taxTyCd"
+                      id="taxTyCd"
+                      options={
+                        taxTyCdes
+                          ? (taxTyCdes as any[])
+                              .filter((item) =>
+                                user?.taxStatus === "ENABLED"
+                                  ? item.cd !== "D"
+                                  : item.cd === "D"
+                              )
+                              .map((item: any) => ({
+                                value: item.cd,
+                                label: item.cdNm,
+                              }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.taxTyCd && formik.errors.taxTyCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="Item Classification">Packaging Unit <span className="text-red-500 text-sm ">*</span></Label>
-                  <Select
-                    // isDisabled={isItemCodesLoading}
-                    isSearchable={true}
-                    onInputChange={handleSearchPkgUnit}
-                    onChange={(value: any) => {
-                      formik.setFieldValue("pkgUnitCd", value.value);
-                    }}
-                    isLoading={isLoadingpkgUnitCdes || isRefetchinpkgUnitCdes}
-                    name="pkgUnitCd"
-                    id="pkgUnitCd"
-                    options={
-                      pkgUnitCdes
-                        ? (pkgUnitCdes as any).map((item: any) => ({
-                            value: item.cd,
-                            label: item.cdNm,
-                          }))
-                        : []
-                    }
-                    className={`border rounded-sm${formik.touched.pkgUnitCd && formik.errors.pkgUnitCd ? 'border border-red-500 rounded-sm' : ""}`}
-                  ></Select>
+                  <div className="grid gap-2">
+                    <Label htmlFor="Item Classification">
+                      Packaging Unit{" "}
+                      <span className="text-red-500 text-sm ">*</span>
+                    </Label>
+                    <Select
+                      // isDisabled={isItemCodesLoading}
+                      isSearchable={true}
+                      onInputChange={handleSearchPkgUnit}
+                      onChange={(value: any) => {
+                        formik.setFieldValue("pkgUnitCd", value.value);
+                      }}
+                      isLoading={isLoadingpkgUnitCdes || isRefetchinpkgUnitCdes}
+                      name="pkgUnitCd"
+                      id="pkgUnitCd"
+                      options={
+                        pkgUnitCdes
+                          ? (pkgUnitCdes as any).map((item: any) => ({
+                              value: item.cd,
+                              label: item.cdNm,
+                            }))
+                          : []
+                      }
+                      className={`border rounded-sm${
+                        formik.touched.pkgUnitCd && formik.errors.pkgUnitCd
+                          ? "border border-red-500 rounded-sm"
+                          : ""
+                      }`}
+                    ></Select>
+                  </div>
                 </div>
-              </div>
-                ): ""
-              }
-              
+              ) : (
+                ""
+              )}
 
               <div className="grid grid-cols-2 gap-4">
-                
                 <div className="grid gap-2">
                   <Label htmlFor="productType">Select Type</Label>
                   <SelectInput
@@ -678,7 +749,10 @@ const generateNewItem = new UtilData();
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Product Code <span className="text-red-500 text-sm ">*</span></Label>
+                  <Label htmlFor="name">
+                    Product Code{" "}
+                    <span className="text-red-500 text-sm ">*</span>
+                  </Label>
                   <Input
                     id="itemCd"
                     name="itemCd"
@@ -692,9 +766,11 @@ const generateNewItem = new UtilData();
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Product Name <span className="text-red-500 text-sm ">*</span></Label>
+                  <Label htmlFor="name">
+                    Product Name{" "}
+                    <span className="text-red-500 text-sm ">*</span>
+                  </Label>
                   <Input
                     id="name"
                     name="name"
@@ -702,9 +778,12 @@ const generateNewItem = new UtilData();
                     value={formik.values.name}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`border rounded-sm${formik.touched.name && formik.errors.name ? 'border border-red-500 rounded-sm' : ""}`}
+                    className={`border rounded-sm${
+                      formik.touched.name && formik.errors.name
+                        ? "border border-red-500 rounded-sm"
+                        : ""
+                    }`}
                   />
-                  
                 </div>
               </div>
 
@@ -799,7 +878,9 @@ const generateNewItem = new UtilData();
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="price">Price (Rwf) <span className="text-red-500 text-sm ">*</span></Label>
+                  <Label htmlFor="price">
+                    Price (Rwf) <span className="text-red-500 text-sm ">*</span>
+                  </Label>
                   <Input
                     id="price"
                     type="number"
@@ -807,7 +888,11 @@ const generateNewItem = new UtilData();
                     value={formik.values.price}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className={`border rounded-sm${formik.touched.price&&formik.errors.price ? "border rounded-sm border-red-500" : ""}`}
+                    className={`border rounded-sm${
+                      formik.touched.price && formik.errors.price
+                        ? "border rounded-sm border-red-500"
+                        : ""
+                    }`}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -906,44 +991,49 @@ const generateNewItem = new UtilData();
                 </p>
               </div>
             </div>
+            {selectedProd ? (
+              <div className="grid gap-4 mt-5 mb-5">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Is Insurance Section */}
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="isrcAplcbYn">
+                      Insurance Appicable(Y/N)
+                    </Label>
+                  </div>
 
-            <div className="grid gap-4 mt-5 mb-5">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Is Insurance Section */}
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="isrcAplcbYn">Insurance Appicable(Y/N)</Label>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="useYn">Used / UnUsed</Label>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="useYn">Used / UnUsed</Label>
-                </div>
+                  <div className="flex items-center">
+                    <Switch
+                      id="isrcAplcbYn"
+                      name="isrcAplcbYn"
+                      // checked={formik.values.isrcAplcbYn}
+                      onCheckedChange={(value) => {
+                        formik.setFieldValue("isrcAplcbYn", value);
+                      }}
+                      checked={formik.values.isrcAplcbYn}
+                      className="disabled:cursor-not-allowed"
+                    />
+                  </div>
 
-                <div className="flex items-center">
-                  <Switch
-                    id="isrcAplcbYn"
-                    name="isrcAplcbYn"
-                    // checked={formik.values.isrcAplcbYn}
-                    onCheckedChange={(value) => {
-                      formik.setFieldValue("isrcAplcbYn", value);
-                    }}
-                    checked={formik.values.isrcAplcbYn}
-                    className="disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <Switch
-                    id="useYn"
-                    name="useYn"
-                    checked={formik.values.useYn}
-                    onCheckedChange={(value) => {
-                      formik.setFieldValue("useYn", value);
-                    }}
-                    className="disabled:cursor-not-allowed"
-                  />
+                  <div className="flex items-center">
+                    <Switch
+                      id="useYn"
+                      name="useYn"
+                      checked={formik.values.useYn}
+                      onCheckedChange={(value) => {
+                        formik.setFieldValue("useYn", value);
+                      }}
+                      className="disabled:cursor-not-allowed"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              ""
+            )}
 
             <DialogFooter>
               <Button

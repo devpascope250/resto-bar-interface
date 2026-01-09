@@ -25,8 +25,6 @@ interface ReceiptProps {
 }
 const ReceiptBody: React.FC<ReceiptProps> = ({ data }) => {
   let { dt, type, status, formatTYpe } = data;
-  console.log("data out", dt, type, status);
-
   const dtmod = dt as SalesTransaction;
   const Newdt: ReceiptData = {
     tradeName: dtmod.receipt.trdeNm?.toUpperCase() ?? "",
@@ -56,7 +54,7 @@ const ReceiptBody: React.FC<ReceiptProps> = ({ data }) => {
     cisDate: new Date(),
     cisTime: new Date(),
     sdcId: dtmod.response?.sdcId ?? "",
-    receiptNumber: dtmod.response?.rcptNo?.toString() ?? "",
+    receiptNumber: dtmod.invcNo?.toString() ?? "",
     referenceId: dtmod.orgInvcNo.toString(),
     internalData: dtmod.response?.intrlData ?? "",
     receiptSignature: dtmod.response?.rcptSign ?? "",
@@ -75,6 +73,7 @@ const ReceiptBody: React.FC<ReceiptProps> = ({ data }) => {
       };
     }),
   };
+
   return (
     <>
       {formatTYpe !== "A4" ? (

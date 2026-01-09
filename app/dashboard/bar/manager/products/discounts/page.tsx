@@ -355,6 +355,7 @@ export default function ProductsDiscounts() {
     return products.filter((product) => !product.discount);
   }, [products]);
 
+  
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">

@@ -6,8 +6,11 @@ export async function POST(request: NextRequest) {
     try{
     const token = request.cookies.get("access_token")?.value;
     const { itemId, status } = await request.json();
+
+    console.log( itemId, status);
+    
     const role = request.headers.get("x-user-role");
-    if ((role as Role) !== "MANAGER") {
+    if ((role as Role) !== "MANAGER" && (role as Role) !== "CHEF") {
         return NextResponse.json({ message: "You are not authorized to perform this action" }, { status: 401 });
     }
 

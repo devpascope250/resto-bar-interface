@@ -5,6 +5,7 @@ interface Notification {
   id: number;
   title: string;
   content: string;
+  sentBy: string;
   detailUrl?: string;
   registeredDate: string;
   isRead?: boolean;
@@ -179,9 +180,9 @@ useEffect(() => {
               {notifications && notifications?.length > 0 ? (
                 <div className="h-full overflow-y-auto custom-scrollbar py-2">
                   <div className="space-y-2 px-3">
-                    {notifications?.map((notification) => (
+                    {notifications?.map((notification, index) => (
                       <div
-                        key={notification.id}
+                        key={index}
                         className={`group relative p-4 rounded-xl transition-all duration-300 cursor-pointer border-l-4 ${
                           notification.isRead 
                             ? 'bg-white/5 hover:bg-white/10 border-l-gray-600' 
@@ -228,6 +229,9 @@ useEffect(() => {
                             </div>
                             <p className="text-sm text-gray-400 mb-3 line-clamp-2">
                               {notification.content}
+                            </p>
+                            <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                              {notification.sentBy}
                             </p>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1.5 text-xs text-gray-500">

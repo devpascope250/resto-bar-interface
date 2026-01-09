@@ -116,8 +116,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,40 +129,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoadingSpinner } from "../ui/loading-spinner";
-
+import { Partnertype, Role } from "@prisma/client";
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const login = useAuthStore((state) => state.login);
-  const router = useRouter();
+  const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    if(user){
+     return redirect(user.role, user.partnerType);
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     setIsLoading(true);
     e.preventDefault();
     setError("");
-
     const user = await login(email, password);
     if (user !== null) {
-      if (user.partnerType === "BARRESTAURANT" && user?.role === "MANAGER") {
-        router.replace("/dashboard/bar/manager");
-      } else if (
-        user.partnerType === "BARRESTAURANT" &&
-        user?.role === "CHEF"
-      ) {
-        router.replace("/dashboard/bar/chef");
-      } else if (user.partnerType === "BARRESTAURANT" && user?.role === "PARTNER_ADMIN") {
-        router.replace("/dashboard/bar/partner");
-      }
-      if (user.partnerType === "BARRESTAURANT" && user?.role === "WAITER") {
-        router.replace("/dashboard/bar/waiters");
-      }
-    } else {
-      setError("Invalid email or password");
-    }
+     redirect(user.role, user.partnerType);
     setIsLoading(false);
+  }else{
+    setIsLoading(false);
+    setError("Invalid email or password");
   };
+}
 
   return (
     <div className="min-h-[100vh] flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -272,4 +264,33 @@ export function LoginForm() {
       </Card>
     </div>
   );
+}
+
+ function redirect(role: Role, type: Partnertype) {
+  switch (role) {
+    case "PARTNER_ADMIN":
+      if (type === "BARRESTAURANT" || type === "RESTAURANT") {
+        window.location.href = "/dashboard/bar/partner";
+      }
+      break;
+    case "CHEF":
+      if (type === "BARRESTAURANT" || type === "RESTAURANT") {
+        window.location.href = "/dashboard/bar/chef";
+      }
+      break;
+    case "MANAGER":
+      if (type === "BARRESTAURANT" || type === "RESTAURANT") {
+        window.location.href = "/dashboard/bar/manager";
+      }
+      break;
+    case "WAITER":
+      if (type === "BARRESTAURANT" || type === "RESTAURANT") {
+        window.location.href = "/dashboard/bar/waiters";
+      }
+      break;
+    default:
+      window.location.href = "/";
+      break;
+  }
+  
 }

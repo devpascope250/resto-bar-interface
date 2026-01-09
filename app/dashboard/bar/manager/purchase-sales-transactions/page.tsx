@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -37,6 +37,8 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { PurchaseTransactionSettings } from "@/lib/service/purchaseTransactionSettings";
 import { useToast } from "@/hooks/use-toast";
+import { RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 export default function PurchasedItemsPage() {
   const { toast } = useToast();
   const { useApiQuery, useApiPost } = useApi();
@@ -57,7 +59,6 @@ export default function PurchasedItemsPage() {
     "/ebm/items/purchase-sales-transactions"
   );
 
-
   const debouncedDateFilterChange = useDebounce(
     (start: Date | null, end: Date | null) => {
       if (start && end) {
@@ -68,14 +69,19 @@ export default function PurchasedItemsPage() {
     500
   );
 
-   const {
+  const {
     data: purchaseTransactions,
     isRefetching,
     isLoading,
-    refetch
-  } = useApiQuery<{data: PurchaseSalesTransaction[], resultDt: string}>(
+    isFetching,
+    refetch,
+  } = useApiQuery<{ data: PurchaseSalesTransaction[]; resultDt: string, message: string }>(
     ["purchases-transactions", filterStartDate, filterEndDate],
-    `/ebm/items/purchase-sales-transactions${filterStartDate&&filterEndDate?`?start_date=${filterStartDate}&end_date=${filterEndDate}`:""}`,
+    `/ebm/items/purchase-sales-transactions${
+      filterStartDate && filterEndDate
+        ? `?start_date=${filterStartDate}&end_date=${filterEndDate}`
+        : ""
+    }`,
     {
       enabled:
         !filterStartDate ||
@@ -91,13 +97,15 @@ export default function PurchasedItemsPage() {
   const { data: purchaseStatuses } = useApiQuery<
     Array<{ cd: string; cdNm: string }>
   >(["purchase-Status-cd"], `/ebm/codes/cdClsNm/Purchase Status`, {
-    enabled: Boolean(purchaseTransactions&&purchaseTransactions.data.length >0),
+    enabled: Boolean(
+      purchaseTransactions && purchaseTransactions.data.length > 0
+    ),
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     placeholderData: keepPreviousData,
   });
- 
+
   const handleChangeDate = (startDate: Date | null, endDate: Date | null) => {
     // id dates are valid, set the filter state
     if (startDate && endDate) {
@@ -112,10 +120,13 @@ export default function PurchasedItemsPage() {
 
   const handleSavePurchaseStatus = async () => {
     const newpurchaseStatuses = new PurchaseTransactionSettings();
-    try{
+    try {
       const data = {
-        data :newpurchaseStatuses.getAllPayloads(selectedPurchaseItem!, selectetPurchaseStatusType!),
-        id: selectedPurchaseItem?.id
+        data: newpurchaseStatuses.getAllPayloads(
+          selectedPurchaseItem!,
+          selectetPurchaseStatusType!
+        ),
+        id: selectedPurchaseItem?.id,
       };
       await savePurchase(data);
       refetch();
@@ -125,25 +136,42 @@ export default function PurchasedItemsPage() {
         variant: "success",
       });
       setSelectedPurchaseItem(null);
-    }catch(err){
+    } catch (err) {
       const error = err as Error;
       toast({
         title: "Purchase Status Update Failed",
         description: error.message ?? "Purchase Status Update Failed",
         variant: "destructive",
-      })
+      });
     }
   };
+
+  const prevIsFetchingRef = useRef(isFetching);
+  useEffect(() => {
+  
+    if (prevIsFetchingRef.current && !isFetching && purchaseTransactions?.message) {
+      toast({
+        title: "Purchase messages",
+        description: purchaseTransactions.message ?? "There is An Error While Fetching Data",
+        variant: "info",
+      });
+    }
+    
+    // Update the ref
+    prevIsFetchingRef.current = isFetching;
+  }, [isFetching, purchaseTransactions]);
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-          Purchases Transactions
-        </h1>
-        <p className="text-muted-foreground">View And Purchases Transactions</p>
+            Purchases Transactions
+          </h1>
+          <p className="text-muted-foreground">
+            View And Purchases Transactions
+          </p>
         </div>
-        
+        <div className="flex items-center gap-3">
         {purchaseTransactions?.resultDt ? (
           <div className="inline-block">
             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
@@ -153,6 +181,20 @@ export default function PurchasedItemsPage() {
         ) : (
           ""
         )}
+
+        {/* Refresh Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+        >
+          <RefreshCw
+            className={cn("h-4 w-4 mr-2", isRefetching && "animate-spin")}
+          />
+          Refresh
+        </Button>
+        </div>
       </div>
       <Card>
         <CardHeader>
@@ -167,7 +209,10 @@ export default function PurchasedItemsPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            columns={PurchaseSalesTransactionColumns(handleChangeStatus, purchaseStatuses ?? [])}
+            columns={PurchaseSalesTransactionColumns(
+              handleChangeStatus,
+              purchaseStatuses ?? []
+            )}
             data={purchaseTransactions?.data ?? []}
             searchKey="salesDt"
             searchPlaceholder="Search products..."
@@ -205,18 +250,20 @@ export default function PurchasedItemsPage() {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {purchaseStatuses?.filter((cd) => {
-                  if(cd.cd === "02" || cd.cd === "04"){
-                    return {
-                      cd: cd.cd,
-                      cdNm: cd.cd === "04" ? "Reject" : cd.cdNm
+                {purchaseStatuses
+                  ?.filter((cd) => {
+                    if (cd.cd === "02" || cd.cd === "04") {
+                      return {
+                        cd: cd.cd,
+                        cdNm: cd.cd === "04" ? "Reject" : cd.cdNm,
+                      };
                     }
-                  }
-                }).map((imp) => (
-                  <SelectItem key={imp.cd} value={imp.cd}>
-                    {imp.cdNm}
-                  </SelectItem>
-                ))}
+                  })
+                  .map((imp) => (
+                    <SelectItem key={imp.cd} value={imp.cd}>
+                      {imp.cdNm}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

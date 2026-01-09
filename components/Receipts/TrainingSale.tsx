@@ -2,6 +2,7 @@ import { DateUtils } from '@/lib/date-utils';
 import React from 'react';
 import QRCode from 'react-qr-code';
 import { DisplayMessage } from './A4/A4Receipt';
+import { AmountFormat } from '@/lib/AmountFormat';
 
 interface ReceiptProps {
   receiptData: {
@@ -137,15 +138,15 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
           <div key={index} style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{item.name}</span>
-              <span>{item.total.toFixed(2)} &nbsp;{item.taxType}</span>
+              <span>{AmountFormat((item.total).toString(), 2, false)} &nbsp;{item.taxType}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className='whitespace-nowrap'>
-              <span>{item.quantity.toFixed(2)}x {item.unitPrice.toFixed(2)}</span>
+              {AmountFormat((item.unitPrice).toString(), 2, false)} x {item.quantity.toFixed()}
             </div>
             {item.discount ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
                 <span>discount -{item.discount}%</span>
-                <span>{(item.total * (1 - item.discount/100)).toFixed(2)}</span>
+                <span>{AmountFormat((item.total * (1 - item.discount/100)).toString())}</span>
               </div>
             ) : ""}
           </div>
@@ -163,7 +164,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
           <span>TOTAL</span>
-          <span>{totals.total.toFixed(2)}</span>
+          <span>{AmountFormat(totals.total.toString(), 2, false)}</span>
         </div>
         {totals.totalC ? (
           <div
@@ -174,7 +175,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL C</span>
-            <span>{totals.totalC.toFixed(2)}</span>
+            <span>{AmountFormat(totals.totalC.toString(), 2, false)}</span>
           </div>
         ) : ""}
         {totals.totalD ? (
@@ -186,7 +187,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL D</span>
-            <span>{totals.totalD.toFixed(2)}</span>
+            <span>{AmountFormat(totals.totalD.toString(), 2, false)}</span>
           </div>
         ): ""}
         {totals.totalAEx ? (
@@ -198,7 +199,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL A-EX</span>
-            <span>{totals.totalAEx.toFixed(2)}</span>
+            <span>{AmountFormat(totals.totalAEx.toString(), 2, false)}</span>
           </div>
         ) : ""}
         {totals.totalB ? <div
@@ -209,7 +210,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>TOTAL B-18.00%</span>
-          <span>{totals.totalB.toFixed(2)}</span>
+          <span>{totals.totalB}</span>
         </div> : ""} 
         {totals.totalTaxB ? 
         <div
@@ -220,19 +221,19 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>TOTAL TAX B</span>
-          <span>{totals.totalTaxB.toFixed(2)}</span>
+          <span>{AmountFormat(totals.totalTaxB.toString(), 2, false)}</span>
         </div> : ""
         }
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
           <span>TOTAL TAX</span>
-          <span>{totals.totalTax.toFixed(2)}</span>
+          <span>{AmountFormat(totals.totalTax.toString(), 2, false)}</span>
         </div>
          {/* Separator */}
       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0' }}></div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
           <span>{payment.method}</span>
-          <span>{payment.amount.toFixed(2)}</span>
+          <span>{AmountFormat(payment.amount.toString(), 2)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
           <span>ITEMS NUMBER</span>
@@ -265,22 +266,19 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
 
          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
           <span>RECEIPT NUMBER:</span>
-          <span>{receiptNumber}</span>
+          <span>{receiptNumber}/{receiptNumber} TS</span>
         </div>
         </div>
-
       </div>
-
 
         {/* Separator */}
       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0', gap: '1mm' }}></div>
-
 
       {/* CIS Information */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
             <span>RECEIPT NUMBER:</span>
-            <span>{receiptNumber}/{receiptNumber} TR</span>
+            <span>{receiptNumber}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
             <span>DATE: {cisDate.toLocaleDateString()}</span>

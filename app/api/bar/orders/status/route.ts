@@ -8,7 +8,7 @@ export async function PUT(request: NextRequest) {
         if(!token){
             return NextResponse.json({message: "You are not authorized to access this service"}, {status: 401});
         }
-        if(role !== "MANAGER"){
+        if(role !== "MANAGER" ){
             return NextResponse.json({message: "You are not authorized to access this service"}, {status: 401});
         }
         const data = await request.json();
@@ -22,6 +22,9 @@ export async function PUT(request: NextRequest) {
             body: JSON.stringify(data)
         }
         );
+        const res = await response.json();
+        console.log(res);
+        
         if(response.status === 200){
             return NextResponse.json({message: "Order status updated successfully"}, {status: 200});
         }
@@ -29,6 +32,8 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({message: "Error updating order status"}, {status: 500});
         }
     }catch(error){
+       
+        
         return NextResponse.json({message: "Error updating order status"}, {status: 500});
     }
     

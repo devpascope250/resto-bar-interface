@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import {
   ImportedItemsColumns,
 } from "@/components/data-table/imported-items-columns";
 import { Button } from "@/components/ui/button";
-import { Import, ImportIcon } from "lucide-react";
+import { Import, ImportIcon, RefreshCw } from "lucide-react";
 import Select from "react-select";
 import {
   Dialog,
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { cn } from "@/lib/utils";
 export default function ImportedItemsPage() {
   const { toast } = useToast();
   const { useApiQuery, useApiPost } = useApi();
@@ -70,11 +71,16 @@ export default function ImportedItemsPage() {
   const {
     data: fetchImportedItems,
     isRefetching,
+    isFetching,
     isLoading,
     refetch,
-  } = useApiQuery<{ data: ImportedItem[]; resultDt: string }>(
+  } = useApiQuery<{ data: ImportedItem[]; resultDt: string, message: string }>(
     ["imported-item", filterStartDate, filterEndDate],
-    `/ebm/items/imported${filterStartDate&&filterEndDate ? `?start_date=${filterStartDate}&&end_date=${filterEndDate}` : ''}`,
+    `/ebm/items/imported${
+      filterStartDate && filterEndDate
+        ? `?start_date=${filterStartDate}&&end_date=${filterEndDate}`
+        : ""
+    }`,
     {
       enabled:
         !filterStartDate ||
@@ -100,8 +106,31 @@ export default function ImportedItemsPage() {
     if (fetchImportedItems?.data && fetchImportedItems.data?.length > 0) {
       setImportedItems(fetchImportedItems.data);
     }
+
+    if(fetchImportedItems?.message){
+      toast({
+        title: "Import messages",
+        description: fetchImportedItems.message ?? "There is An Error While Fetching Data",
+        variant: "info",
+      });
+    }
   }, [fetchImportedItems?.data]);
 
+
+  const prevIsFetchingRef = useRef(isFetching);
+useEffect(() => {
+
+  if (prevIsFetchingRef.current && !isFetching && fetchImportedItems?.message) {
+    toast({
+      title: "Import messages",
+      description: fetchImportedItems.message ?? "There is An Error While Fetching Data",
+      variant: "info",
+    });
+  }
+  
+  // Update the ref
+  prevIsFetchingRef.current = isFetching;
+}, [isFetching, fetchImportedItems]);
   const { data: importItemCCd } = useApiQuery<
     Array<{ cd: string; cdNm: string }>
   >(["imported-item-ccd"], `/ebm/codes/cdClsNm/Import Item Status`, {
@@ -126,7 +155,6 @@ export default function ImportedItemsPage() {
   // imptItemSttsCd
   const handleImportAllItems = async () => {
     try {
-      
       let selected = selectedItems.map((item) => {
         return {
           ...item,
@@ -136,13 +164,18 @@ export default function ImportedItemsPage() {
           imptItemSttsCd: selectetImportType,
         };
       });
-      if(selected.some((item) => (item.itemCd === null && item.imptItemSttsCd === "3"))){
+      if (
+        selected.some(
+          (item) => item.itemCd === null && item.imptItemSttsCd === "3"
+        )
+      ) {
         toast({
-        title: "Error",
-        description: "You must select item first since status you choose Approved Status",
-        variant: "error",
-      });
-      return;
+          title: "Error",
+          description:
+            "You must select item first since status you choose Approved Status",
+          variant: "error",
+        });
+        return;
       }
       await importSelected(selected);
       setSelectedItems([]);
@@ -181,6 +214,9 @@ export default function ImportedItemsPage() {
     setImportedItems(newedited);
   };
 
+
+  console.log(fetchImportedItems);
+  
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
@@ -190,15 +226,29 @@ export default function ImportedItemsPage() {
             View And Tracking Imported Items
           </p>
         </div>
-        {fetchImportedItems?.resultDt ? (
-          <div className="inline-block">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-              {new Date(fetchImportedItems?.resultDt).toLocaleString()}
-            </span>
-          </div>
-        ) : (
-          ""
-        )}
+
+        <div className="flex items-center gap-3">
+          {fetchImportedItems?.resultDt && (
+            <div className="inline-block">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                {new Date(fetchImportedItems?.resultDt).toLocaleString()}
+              </span>
+            </div>
+          )}
+
+          {/* Refresh Button */}
+           <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+            >
+              <RefreshCw
+                className={cn("h-4 w-4 mr-2", isRefetching && "animate-spin")}
+              />
+              Pull imports
+              </Button>
+        </div>
       </div>
       <Card>
         <CardHeader>
@@ -261,11 +311,15 @@ export default function ImportedItemsPage() {
                 <SelectValue placeholder="Select Status" />
               </SelectTrigger>
               <SelectContent>
-                {importItemCCd?.filter((cd) => cd.cdNm === "Approved" || cd.cdNm === "Cancelled").map((imp) => (
-                  <SelectItem key={imp.cd} value={imp.cd}>
-                    {imp.cdNm}
-                  </SelectItem>
-                ))}
+                {importItemCCd
+                  ?.filter(
+                    (cd) => cd.cdNm === "Approved" || cd.cdNm === "Cancelled"
+                  )
+                  .map((imp) => (
+                    <SelectItem key={imp.cd} value={imp.cd}>
+                      {imp.cdNm}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </SelectImTy>
           </div>

@@ -92,6 +92,9 @@ export const orderColumns = (
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "RWF",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 20,
+        useGrouping: true,
       }).format(amount);
       return <div className="font-medium">{formatted}</div>;
     },

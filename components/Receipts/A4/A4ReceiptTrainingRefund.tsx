@@ -1,3 +1,4 @@
+import { AmountFormat } from "@/lib/AmountFormat";
 import { DateUtils } from "@/lib/date-utils";
 import React from "react";
 import QRCode from "react-qr-code";
@@ -93,11 +94,13 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           {/* Center Content - Absolute positioned, doesn't affect grid */}
           <div className="absolute left-[47%] transform -translate-x-1/2 top-0 text-center leading-tight">
             <DisplayMessage message={commercialMessage ?? ""} />
-            <div className="text-[14px] font-bold text-center mt-6">
+            <div className="text-[14px] font-bold text-center mt-5">
               TRAINING MODE
             </div>
-            <div className="text-[14px] mt-2">
-              <p>REFUND </p>
+            <div className="text-[14px] font-bold text-center mt-1">REFUND</div>
+            <div className="text-[14px] mt-1">
+              <p>REFUND IS APPROVED ONLY FOR </p>
+              <p>ORIGINAL SALES RECEIPT</p>
             </div>
           </div>
 
@@ -172,10 +175,23 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
 
                 <td className="border-l border-r border-black p-1">
                   {item.name}
+                   {item.discount ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "10px",
+                      }}
+                    >
+                      <span>discount -{item.discount}%</span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-center">
-                  {item.quantity.toFixed(2)}
+                  {item.quantity.toString()}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-center">
@@ -183,11 +199,18 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.unitPrice.toFixed(2)}
+                 - {AmountFormat(item.unitPrice.toString(), 2, false)}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.total.toFixed(2)}
+                  - {AmountFormat(item.total.toString(), 2, false)}
+                  {item.discount ? (
+                    <span><br />
+                     - {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    </span>
+                  ) : (
+                    ""
+                  )}
                 </td>
               </tr>
             ))}
@@ -228,7 +251,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (NS)
+              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (TR)
             </p>
 
             <div
@@ -258,14 +281,14 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Rwf</td>
                     <td className="border border-black p-1 text-right">
-                      -{totals.total.toFixed(2)}
+                      -{AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   {totals.totalAEx ? (
                     <tr>
                       <td className="border border-black p-1">Total A Ex</td>
                       <td className="border border-black p-1 text-right">
-                        -{totals.totalAEx.toFixed(2)}
+                        -{AmountFormat(totals.totalAEx.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -276,7 +299,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total C</td>
                       <td className="border border-black p-1 text-right">
-                        -{totals.totalC.toFixed(2)}
+                        -{AmountFormat(totals.totalC.toString(),2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -287,7 +310,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total D</td>
                       <td className="border border-black p-1 text-right">
-                        -{totals.totalD.toFixed(2)}
+                        -{AmountFormat(totals.totalD.toString(),2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -297,7 +320,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total B-18%</td>
                       <td className="border border-black p-1 text-right">
-                        -{totals.totalB.toFixed(2)}
+                        -{AmountFormat(totals.totalB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -307,7 +330,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total Tax-B</td>
                       <td className="border border-black p-1 text-right">
-                        -{totals.totalTaxB.toFixed(2)}
+                        -{AmountFormat(totals.totalTaxB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -316,7 +339,7 @@ const A4ReceiptTrainingRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
-                      -{totals.totalTax.toFixed(2)}
+                      -{AmountFormat(totals.totalTax.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>

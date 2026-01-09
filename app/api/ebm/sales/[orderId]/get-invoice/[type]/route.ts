@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 const api = process.env.BAR_BACKEND_URL;
-export async function GET(req: NextRequest, { params }: { params: Promise<{ orderId: number, type: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ orderId: number, type: string }> }) {
     const token = req.cookies.get("access_token")?.value;
     const ebmToken = req.headers.get("x-ebmToken-id");
     const partnerId = req.headers.get("x-partner-id");
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
         return NextResponse.json({ error: "No token found" }, { status: 401 });
     }
     try {
+        const custData = await req.json();
         const partner = await prisma.partner.findUnique({
                     where: {
                         id: partnerId
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orde
                     "MRC-code": partner?.mrcCode || "",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ orderId, type, ...(rfdRsnCd ? { rfdRsnCd } : {}) })
+                body: JSON.stringify({ orderId, type, ...(rfdRsnCd ? { rfdRsnCd } : {}), custData })
             }
         )
         const result = await data.json();

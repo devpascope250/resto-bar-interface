@@ -245,6 +245,7 @@ import { DateUtils } from "@/lib/date-utils";
 import React from "react";
 import QRCode from "react-qr-code";
 import { DisplayMessage } from "./A4Receipt";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 interface ReceiptProps {
   receiptData: {
@@ -323,33 +324,37 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
     <div className="w-full bg-white p-2 text-sm text-black">
       <div className="mx-auto max-w-1xl border-white p-4">
         {/* ================= HEADER ================= */}
-        <div className="grid grid-cols-3 items-center justify-between"> {/* No padding */}
-      {/* Left Logo */}
-      <div className="pt-1"> {/* Small top padding for logo */}
-        <img
-          src="/receiptLogo/logo1.png"
-          alt="Logo 1"
-          className="h-14 w-auto object-contain" 
-        />
-      </div>
-
-      {/* Center Content */}
-      <div className="text-center leading-tight">
-          <DisplayMessage message={commercialMessage ?? ""} />
-        <div className="text-[14px] font-bold text-center mt-6"> {/* Tailwind classes */}
-          COPY
+        <div className="grid grid-cols-3 items-center justify-between">
+          {" "}
+          {/* No padding */}
+          {/* Left Logo */}
+          <div className="pt-1">
+            {" "}
+            {/* Small top padding for logo */}
+            <img
+              src="/receiptLogo/logo1.png"
+              alt="Logo 1"
+              className="h-14 w-auto object-contain"
+            />
+          </div>
+          {/* Center Content */}
+          <div className="text-center leading-tight">
+            <DisplayMessage message={commercialMessage ?? ""} />
+            <div className="text-[14px] font-bold text-center mt-6">
+              {" "}
+              {/* Tailwind classes */}
+              COPY
+            </div>
+          </div>
+          {/* Right Logo */}
+          <div className="flex justify-end pt-1">
+            <img
+              src="/receiptLogo/logo2.png"
+              alt="Logo 2"
+              className="h-14 w-auto object-contain"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Right Logo */}
-      <div className="flex justify-end pt-1">
-        <img
-          src="/receiptLogo/logo2.png"
-          alt="Logo 2"
-          className="h-14 w-auto object-contain"
-        />
-      </div>
-    </div>
 
         {/* ================= INVOICE INFO ================= */}
         <div className="flex justify-between mb-4 print:mb-3 mt-4">
@@ -406,6 +411,19 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
 
                 <td className="border-l border-r border-black p-1">
                   {item.name}
+                  {item.discount ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "10px",
+                      }}
+                    >
+                      <span>discount -{item.discount}%</span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-center">
@@ -417,29 +435,35 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.unitPrice.toFixed(2)}
+                  {AmountFormat(item.unitPrice.toString(), 2, false)}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.total.toFixed(2)}
+                  {AmountFormat(item.total.toString(), 2, false)}
+                  {item.discount ? (
+                    <span><br />
+                      {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    </span>
+                  ) : (
+                    ""
+                  )}
                 </td>
               </tr>
             ))}
 
             {/* Empty filler rows */}
             {Array.from({ length: Math.max(0, MAX_ROWS - items.length) }).map(
-  (_, rowIndex) => (
-    <tr key={`empty-${rowIndex}`}>
-      {Array.from({ length: 6 }).map((_, colIndex) => (
-        <td
-          key={colIndex}
-          className="border-l border-r border-black h-10"
-        ></td>
-      ))}
-    </tr>
-  )
-)}
-
+              (_, rowIndex) => (
+                <tr key={`empty-${rowIndex}`}>
+                  {Array.from({ length: 6 }).map((_, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className="border-l border-r border-black h-10"
+                    ></td>
+                  ))}
+                </tr>
+              )
+            )}
           </tbody>
         </table>
         <div
@@ -539,14 +563,14 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Rwf</td>
                     <td className="border border-black p-1 text-right">
-                      {totals.total.toFixed(2)}
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   {totals.totalAEx ? (
                     <tr>
                       <td className="border border-black p-1">Total A Ex</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalAEx.toFixed(2)}
+                        {AmountFormat(totals.totalAEx.toString(),2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -557,7 +581,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total C</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalC.toFixed(2)}
+                        {AmountFormat(totals.totalC.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -568,7 +592,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total D</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalD.toFixed(2)}
+                        {AmountFormat(totals.totalD.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -578,7 +602,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total B-18%</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalB.toFixed(2)}
+                        {AmountFormat(totals.totalB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -589,7 +613,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total Tax-B</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalTaxB.toFixed(2)}
+                        {AmountFormat(totals.totalTaxB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -598,7 +622,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
-                      {totals.totalTax.toFixed(2)}
+                      {AmountFormat(totals.totalTax.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>

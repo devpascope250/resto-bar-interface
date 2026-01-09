@@ -96,6 +96,7 @@ export const useAuthStore = create<AuthStore>()(
           const user = data.user;
           
           set({ user, isLoading: false });
+
           return user;
         } catch (error) {
           console.error('Login failed:', error);

@@ -665,6 +665,7 @@ import { ConfirmOrderDialog } from "./confirm-order-dialog";
 import { useRouter } from "next/navigation";
 import { Badge } from "../ui/badge";
 import { keepPreviousData } from "@tanstack/react-query";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 interface OrderDetails {
   id?: number;
@@ -832,11 +833,15 @@ export function CartSidebar() {
                   {item.product.discount && item.product.discount !== null ? (
                     <>
                       <span className="text-sm font-semibold text-primary">
-                        {item.product?.price * (1 - item.product.discount.rate / 100)}
-                        Rwf
+                        {AmountFormat(
+                          (
+                            item.product?.price *
+                            (1 - item.product.discount.rate / 100)
+                          ).toString()
+                        )}
                       </span>
                       <span className="text-xs text-muted-foreground line-through">
-                        {item.product.price.toFixed(2)}
+                        {AmountFormat(item.product.price.toString(), 0)}
                       </span>
                       <Badge
                         variant="outline"
@@ -847,7 +852,7 @@ export function CartSidebar() {
                     </>
                   ) : (
                     <p className="text-sm font-semibold text-primary">
-                      {item.product.price.toFixed(2)} Rwf
+                      {AmountFormat(item.product.price.toString(), 0)}
                     </p>
                   )}
                   {item.product.productType === "BEVERAGE" && (
@@ -929,9 +934,52 @@ export function CartSidebar() {
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-8 text-center text-sm font-medium">
-                        {item.quantity}
-                      </span>
+
+                      {/* Replace the span with an input field */}
+                      <input
+                        type="number"
+                        step="0.05"
+                        min="0.05"
+                        value={Number(item.quantity)} // Always display with 2 decimals
+                        onChange={(e) => {
+                          const rawValue = e.target.value;
+                          const value = parseFloat(rawValue);
+
+                          if (!isNaN(value) && value > 0) {
+                            // Set max value if product has stock limit (except for itemTyCd "3")
+                            const maxQuantity =
+                              item.product.itemTyCd !== "3"
+                                ? item.product.currentStock
+                                : Infinity;
+
+                            const finalQuantity = Math.min(value, maxQuantity);
+                            updateQuantity(item.product.id, finalQuantity);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          let value = parseFloat(e.target.value);
+
+                          if (isNaN(value) || value <= 0) {
+                            // Reset to minimum quantity if invalid
+                            updateQuantity(item.product.id, 0.01);
+                            return;
+                          }
+
+                          // Always ensure 2 decimal places
+                          value = parseFloat(value.toFixed(2));
+
+                          // Set max value if product has stock limit (except for itemTyCd "3")
+                          const maxQuantity =
+                            item.product.itemTyCd !== "3"
+                              ? item.product.currentStock
+                              : Infinity;
+
+                          const finalQuantity = Math.min(value, maxQuantity);
+                          updateQuantity(item.product.id, finalQuantity);
+                        }}
+                        className="w-16 text-center text-sm font-medium border rounded px-1 py-1"
+                      />
+
                       <Button
                         variant="outline"
                         size="icon"
@@ -960,14 +1008,14 @@ export function CartSidebar() {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
               <span className="font-medium">
-                {getTotalPrice().toFixed(2)} Rwf
+                {AmountFormat(getTotalPrice().toString(), 2)}
               </span>
             </div>
             <Separator />
             <div className="flex justify-between">
               <span className="font-semibold">Total</span>
               <span className="text-xl font-bold text-primary">
-                {getTotalPrice().toFixed(2)} Rwf
+                {AmountFormat(getTotalPrice().toString())}
               </span>
             </div>
           </div>

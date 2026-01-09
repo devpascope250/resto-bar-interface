@@ -2,6 +2,7 @@ import { DateUtils } from "@/lib/date-utils";
 import React from "react";
 import QRCode from "react-qr-code";
 import { DisplayMessage } from "./A4/A4Receipt";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 interface ReceiptProps {
   receiptData: ReceiptData;
@@ -170,7 +171,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           <div key={index} style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>{item.name}</span>
-              <span>-{item.total.toFixed(2)} &nbsp;{item.taxType}</span>
+              <span>-{AmountFormat(item.total.toString(), 2, false)} &nbsp;{item.taxType}</span>
             </div>
             <div
               style={{
@@ -180,7 +181,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
               }}
             >
               <span>
-                {item.unitPrice.toFixed(2)} x {item.quantity.toFixed(2)}
+                {AmountFormat(item.unitPrice.toString(), 2, false)} x {item.quantity.toFixed(2)}
               </span>
             </div>
             {item.discount ? (
@@ -193,7 +194,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
               >
                 <span>discount -{item.discount}%</span>
                 <span>
-                  -{(item.total * (1 - item.discount / 100)).toFixed(2)}
+                  -{AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
                 </span>
               </div>
             ): ""}
@@ -215,7 +216,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL C</span>
-            <span>-{totals.totalC.toFixed(2)}</span>
+            <span>-{AmountFormat(totals.totalC.toString(),2, false)}</span>
           </div>
         ) : ""}
         {totals.totalD ? (
@@ -227,7 +228,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL D</span>
-            <span>-{totals.totalD.toFixed(2)}</span>
+            <span>-{AmountFormat(totals.totalD.toString(), 2, false)}</span>
           </div>
         ): ""}
         {totals.totalAEx ? (
@@ -239,7 +240,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL A-EX</span>
-            <span>-{totals.totalAEx.toFixed(2)}</span>
+            <span>-{AmountFormat(totals.totalAEx.toString(), 2, false)}</span>
           </div>
         ) : ""}
         {totals.totalB ? <div
@@ -250,7 +251,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>TOTAL B-18.00%</span>
-          <span>-{totals.totalB.toFixed(2)}</span>
+          <span>-{AmountFormat(totals.totalB.toString(),2, false)}</span>
         </div> : ""} 
         {totals.totalTaxB ? 
         <div
@@ -261,7 +262,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>TOTAL TAX B</span>
-          <span>-{totals.totalTaxB.toFixed(2)}</span>
+          <span>-{AmountFormat(totals.totalTaxB.toString(), 2, false)}</span>
         </div> : ""
         }
         <div
@@ -272,7 +273,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>TOTAL TAX</span>
-          <span>-{totals.totalTax.toFixed(2)}</span>
+          <span>-{AmountFormat(totals.totalTax.toString(), 2, false)}</span>
         </div>
         {/* Separator */}
         <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
@@ -285,7 +286,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
           }}
         >
           <span>{payment.method}</span>
-          <span>-{payment.amount.toFixed(2)}</span>
+          <span>-{AmountFormat(payment.amount.toString())}</span>
         </div>
         <div
           style={{
@@ -381,7 +382,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             date
           ).toLocaleDateString()}#${DateUtils.parse(
             time
-          ).toLocaleTimeString()}#${sdcId}#${receiptNumber}#${internalData
+          ).toLocaleTimeString()}#${sdcId}#${receiptNumber} / ${receiptNumber}NR#${internalData
             ?.padEnd(40, "")
             ?.match(/.{1,4}/g)
             ?.join("-")}#${receiptSignature

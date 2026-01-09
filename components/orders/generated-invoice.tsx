@@ -52,6 +52,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Input } from "../ui/input";
+import { AmountFormat } from "@/lib/AmountFormat";
 interface OrderDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -70,6 +72,15 @@ interface ReceiptTypeDialogProps {
   isLoadingRefundOptions: boolean;
   onGenerate: () => void;
   isGenerating: boolean;
+  orderCustomer: Array<{
+    id: number;
+    name: string;
+    tin?: string;
+    mobile?: string;
+  }>;
+  OnselectedCustomerOrders: (
+    customers: Array<{ id: number; tin: string; purchaseCode: string }>
+  ) => void;
 }
 
 interface ReceiptCardProps {
@@ -89,12 +100,68 @@ const ReceiptTypeDialog: React.FC<ReceiptTypeDialogProps> = ({
   isLoadingRefundOptions,
   onGenerate,
   isGenerating,
+  orderCustomer,
+  OnselectedCustomerOrders,
 }) => {
   const isRefundType = selectedType === "NR" || selectedType === "TR";
   const isCopyType = ["NS", "TS", "PS"].includes(selectedType);
+  const [customers, setCustomers] = React.useState<
+    Array<{ id: number; tin: string; purchaseCode: string }>
+  >([]);
 
+  React.useEffect(() => {
+    if (orderCustomer && orderCustomer.length > 0) {
+      setCustomers(
+        orderCustomer?.map((customer) => ({
+          id: customer.id,
+          tin: customer.tin ?? "",
+          purchaseCode: "",
+        }))
+      );
+    }
+  }, [orderCustomer]);
+
+  const handleSelectPurchaseCode = (value: string, customerId: number) => {
+    setCustomers(
+      customers.map((c) =>
+        c.id === customerId ? { ...c, purchaseCode: value } : c
+      )
+    );
+
+    OnselectedCustomerOrders(
+      customers.map((c) =>
+        c.id === customerId ? { ...c, purchaseCode: value } : c
+      )
+    );
+  };
+  const receptErrorCode = LocalStorage.getItem("ReceiptErrorCode");
+
+  const handleCloseMd = () => {
+    onOpenChange(false);
+    LocalStorage.removeItem("ReceiptErrorCode"); 
+  }
+
+  // console.log( !selectedType ||
+  //             isGenerating ||
+  //             (isRefundType && (!refundReason.trim() && (Number(receptErrorCode) === 404))) 
+              // ||
+              // (customers.some((c) => !c.purchaseCode.trim())
+              //  &&
+              //   (Number(receptErrorCode) === 404 &&
+              //   selectedType !== "NS" &&
+              //   selectedType !== "TS" &&
+              //   selectedType !== "PS" &&
+              //   selectedType !== "" &&
+              //   selectedType !== undefined)
+              // )
+              // );
+  console.log(Number(receptErrorCode) === 404);
+
+  console.log(orderCustomer);
+  
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleCloseMd}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -108,7 +175,9 @@ const ReceiptTypeDialog: React.FC<ReceiptTypeDialogProps> = ({
 
         <div className="space-y-6 py-2">
           <div className="space-y-2">
-            <Label>Receipt Type</Label>
+            <div className="gap-3">
+              <Label>Receipt Type</Label>
+            </div>
             <SelectInput value={selectedType} onValueChange={onTypeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select receipt type" />
@@ -128,28 +197,96 @@ const ReceiptTypeDialog: React.FC<ReceiptTypeDialogProps> = ({
             </SelectInput>
           </div>
 
-          {isRefundType && (
-            <div className="space-y-2">
-              <Label>Refund Reason</Label>
-              {isLoadingRefundOptions ? (
-                <div className="flex items-center justify-center py-4">
-                  <LoadingSpinner size="sm" />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    Loading reasons...
-                  </span>
+          {selectedType !== "NS" &&
+          selectedType !== "TS" &&
+          selectedType !== "PS" &&
+          selectedType !== "" &&
+          selectedType !== undefined ? (
+            <div>
+              {Number(receptErrorCode) === 404 ? (
+                <div>
+                  {
+                    // loop all customer and with purchase code field when customer has tin
+                    orderCustomer &&
+                      orderCustomer.length > 0 &&
+                      orderCustomer.map((customer, index) => (
+                        <div key={index}>
+                          {customer.tin && (
+                            <div
+                              key={customer.id}
+                              className="border rounded p-3"
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="font-medium text-sm truncate">
+                                    {customer.name}
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                    {customer.tin && (
+                                      <span>TIN: {customer.tin}</span>
+                                    )}
+                                    {customer.mobile && (
+                                      <span>TEL: {customer.mobile}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  #{customer.id}
+                                </Badge>
+                              </div>
+
+                              <Input
+                                placeholder="Purchase code"
+                                value={
+                                  customers.find((c) => c.id === customer.id)
+                                    ?.purchaseCode || ""
+                                }
+                                onChange={(e) =>
+                                  handleSelectPurchaseCode(
+                                    e.target.value,
+                                    customer.id
+                                  )
+                                }
+                                className="h-8 text-md"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))
+                  }
+
+                  {isRefundType && (
+                    <div className="space-y-2">
+                      <Label>Refund Reason</Label>
+                      {isLoadingRefundOptions ? (
+                        <div className="flex items-center justify-center py-4">
+                          <LoadingSpinner size="sm" />
+                          <span className="ml-2 text-sm text-muted-foreground">
+                            Loading reasons...
+                          </span>
+                        </div>
+                      ) : (
+                        <Select
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                          placeholder="Select refund reason"
+                          value={refundOptions?.find(
+                            (v) => v.value === refundReason
+                          )}
+                          onChange={(v) => onRefundReasonChange(v?.value ?? "")}
+                          options={refundOptions}
+                          isSearchable
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <Select
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  placeholder="Select refund reason"
-                  value={refundOptions?.find((v) => v.value === refundReason)}
-                  onChange={(v) => onRefundReasonChange(v?.value ?? "")}
-                  options={refundOptions}
-                  isSearchable
-                />
+                ""
               )}
             </div>
+          ) : (
+            ""
           )}
 
           {isCopyType && (
@@ -178,7 +315,6 @@ const ReceiptTypeDialog: React.FC<ReceiptTypeDialogProps> = ({
             </p>
           </div>
         </div>
-
         <DialogFooter>
           <Button
             variant="outline"
@@ -189,10 +325,9 @@ const ReceiptTypeDialog: React.FC<ReceiptTypeDialogProps> = ({
           </Button>
           <Button
             onClick={onGenerate}
-            disabled={
-              !selectedType ||
+            disabled={!selectedType ||
               isGenerating ||
-              (isRefundType && !refundReason.trim())
+              (isRefundType && (!refundReason.trim() && (Number(receptErrorCode) === 404))) 
             }
           >
             {isGenerating ? (
@@ -285,7 +420,7 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({
         <div>
           <div className="flex justify-between items-center mb-2">
             <p className="font-medium">Items ({receipt.itemList.length})</p>
-            <p className="font-bold text-lg">{formatMoney(receipt.totAmt)}</p>
+            <p className="font-bold text-lg">{AmountFormat(receipt.totAmt.toString())}</p>
           </div>
           <ScrollArea className="h-32 pr-4">
             {receipt.itemList.map((item, itemIndex) => (
@@ -296,12 +431,12 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({
                 <div className="flex-1">
                   <p className="font-medium text-sm">{item.itemNm}</p>
                   <p className="text-xs text-muted-foreground">
-                    {item.qty} × {formatMoney(item.prc)}
+                    {item.qty} × {AmountFormat(item.prc.toString())}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-sm">
-                    {formatMoney(item.totAmt)}
+                    {AmountFormat((item.totAmt).toString())}
                   </p>
                   <Badge variant="secondary" className="text-xs">
                     Tax {item.taxTyCd}
@@ -313,8 +448,7 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-           
-           <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="p-0 cursor-pointer">
                 {/* <span className="sr-only">Open menu</span> */}
@@ -339,12 +473,11 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({
                 onClick={() => onPrint(`A4`)}
               >
                 <Printer className="h-4 w-4" />
-                A4  Print
+                A4 Print
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        
-         
+
           {/* <Button variant="outline" size="sm" className="gap-2">
             <Download className="h-3 w-3" />
             Download
@@ -366,6 +499,7 @@ export function ViewInvoiceDialog({
 }: OrderDetailsDialogProps) {
   const { toast } = useToast();
   const { useApiQuery, api } = useApi();
+  // console.log(order);
 
   const [genInvc, setGenInc] = React.useState<{
     status: number;
@@ -374,6 +508,9 @@ export function ViewInvoiceDialog({
   const [receiptTypeDialogOpen, setReceiptTypeDialogOpen] =
     React.useState(false);
   const [selectedReceiptType, setSelectedReceiptType] = React.useState("");
+  const [selectedCustomerOrders, setSelectedCustomerOrders] = React.useState<
+    Array<{ id: number; tin: string; purchaseCode: string }>
+  >([]);
   const [refundReason, setRefundReason] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [isPrinting, setIsPrinting] = React.useState(false);
@@ -402,15 +539,13 @@ export function ViewInvoiceDialog({
       if (receiptType === "NR" || receiptType === "TR") {
         url += `?rfdRsnCd=01`;
       }
-      const response = await api.get<{
-    status: number;
-    data: SalesTransaction[];
-  } | null>(url);
-     
-          setGenInc(response);
-      
+      const response = await api.post<{
+        status: number;
+        data: SalesTransaction[];
+      } | null>(url, selectedCustomerOrders);
+
+      setGenInc(response);
     } catch (error) {
-      console.log(error);
     } finally {
       setIsGenerating(false);
     }
@@ -424,23 +559,21 @@ export function ViewInvoiceDialog({
     }
   }, [order]);
 
-    const existedCpCopy = LocalStorage.getItem("CurrentCopy");
-    
+  const existedCpCopy = LocalStorage.getItem("CurrentCopy");
 
   const generateInvoice = async () => {
+    LocalStorage.removeItem("ReceiptErrorCode");
     if (!order?.id || !selectedReceiptType) return null;
     setIsGenerating(true);
     try {
       let url = `/ebm/sales/${order.id}/get-invoice/${selectedReceiptType}`;
-
       if (
         (selectedReceiptType === "NR" || selectedReceiptType === "TR") &&
         refundReason
       ) {
         url += `?rfdRsnCd=${encodeURIComponent(refundReason)}`;
       }
-
-      const response = await api.get<any>(url);
+      const response = await api.post<any>(url, selectedCustomerOrders);
 
       if (!response) {
         throw new Error("Failed to generate invoice");
@@ -456,10 +589,13 @@ export function ViewInvoiceDialog({
           description: `Receipt generated successfully`,
         });
       }
-
+      setReceiptTypeDialogOpen(false);
+      LocalStorage.removeItem("latestReceipt");
+      LocalStorage.removeItem("CurrentCopy");
       return response;
     } catch (error) {
-      LocalStorage.removeItem("latestReceipt");
+      
+      LocalStorage.setItem("ReceiptErrorCode", "404");
       // console.error("Error generating invoice:", error);
       toast({
         title: "Error",
@@ -485,7 +621,6 @@ export function ViewInvoiceDialog({
       return;
     }
 
-    setReceiptTypeDialogOpen(false);
     await generateInvoice();
   };
 
@@ -496,7 +631,11 @@ export function ViewInvoiceDialog({
     }
   }, [open]);
 
-  const handlePrint = (receipt: SalesTransaction, type: string, formatType?: string) => {
+  const handlePrint = (
+    receipt: SalesTransaction,
+    type: string,
+    formatType?: string
+  ) => {
     if (!receipt) return;
     setSelectedReceipt(receipt);
     setReceiptTYpe(type);
@@ -514,6 +653,8 @@ export function ViewInvoiceDialog({
       value: code.cd,
     })) || [];
 
+    console.log(order?.invoices);
+    
   return (
     <>
       {/* Main Dialog */}
@@ -586,13 +727,13 @@ export function ViewInvoiceDialog({
                           key={`${receipt.invcNo}-${index}`}
                           receipt={receipt}
                           index={index}
-                          onPrint={(prtType) =>{
+                          onPrint={(prtType) => {
                             handlePrint(
                               receipt,
-                              (receipt.salesTyCd + receipt.rcptTyCd),
+                              receipt.salesTyCd + receipt.rcptTyCd,
                               prtType
-                            )}
-                          }
+                            );
+                          }}
                         />
                       ))}
                     </div>
@@ -659,7 +800,7 @@ export function ViewInvoiceDialog({
             <DialogFooter className="px-6 py-4 border-t bg-muted/50">
               <div className="flex justify-between items-center w-full">
                 <div className="flex items-center gap-4">
-                  <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                  <Button variant="ghost" onClick={() => {onOpenChange(false); LocalStorage.removeItem("ReceiptErrorCode");}}>
                     Close
                   </Button>
                   <Button
@@ -686,8 +827,10 @@ export function ViewInvoiceDialog({
       {/* Receipt Type Selection Dialog */}
       <ReceiptTypeDialog
         open={receiptTypeDialogOpen}
+        orderCustomer={(order?.invoices as any) ?? []}
         onOpenChange={setReceiptTypeDialogOpen}
         selectedType={selectedReceiptType}
+        OnselectedCustomerOrders={(orders) => setSelectedCustomerOrders(orders)}
         onTypeChange={setSelectedReceiptType}
         refundReason={refundReason}
         onRefundReasonChange={setRefundReason}
@@ -704,8 +847,12 @@ export function ViewInvoiceDialog({
             data={{
               type: receiptTYpe as any,
               dt: selectedReceipt,
-              status: (existedCpCopy && (existedCpCopy.type === "NS" || existedCpCopy === "TS")) ? 201 : genInvc?.status ?? 0,
-              formatTYpe
+              status:
+                existedCpCopy &&
+                (existedCpCopy.type === "NS" || existedCpCopy === "TS")
+                  ? 201
+                  : genInvc?.status ?? 0,
+              formatTYpe,
             }}
           />
         </div>

@@ -46,6 +46,7 @@ import { keepPreviousData } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionTypeCodeClassification } from "@/lib/codeDefinitions";
 import { LocalStorage } from "@/lib/local-storage";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 // Updated interfaces
 interface CustomerReceiptData {
@@ -141,7 +142,7 @@ export function OrderDetailsDialog({
   //   }
   // );
   const formatMoney = (n?: number) =>
-    typeof n === "number" ? n.toFixed(2) + " Rwf" : "-";
+    typeof n === "number" ? n.toFixed(2) + " Rwf" : Number(n).toFixed(2)+ " Rwf";
 
   const formatDate = (dateString?: string) =>
     dateString
@@ -301,6 +302,8 @@ export function OrderDetailsDialog({
       order && order?.orderCustomers.length > 0 ? "?is_existed_order=true" : ""
     }`
   );
+
+  
   // Add this function to handle receipt type selection
   const handleReceiptTypeSelect = async (type: string) => {
     setSelectedReceiptType(type);
@@ -344,8 +347,6 @@ export function OrderDetailsDialog({
             purchaseCodeMsg += `Please Generate Purchase Codes for \n ${customer.name} \n`;
           }
         }
-
-        console.log(customers);
         if (foundCust.length > 0) {
           toast({
             title: "Error",
@@ -550,7 +551,15 @@ export function OrderDetailsDialog({
 
   const totalOrderAmount = items
     .filter((item) => item.status !== "CANCELLED")
-    .reduce((total, item) => total + (item.product?.discount && item.product.discount !== null ? item.product.price * (1 - item.product.discount.rate / 100) : item.product.price) * item.quantity, 0);
+    .reduce(
+      (total, item) =>
+        total +
+        (item.product?.discount && item.product.discount !== null
+          ? item.product.price * (1 - item.product.discount.rate / 100)
+          : item.product.price) *
+          item.quantity,
+      0
+    );
 
   const { mutateAsync: updateStatus, isPending: isPendingConfirm } = useApiPut(
     ["orders"],
@@ -775,29 +784,45 @@ export function OrderDetailsDialog({
                                   </>
                                 )}
                                 <div className="text-sm font-medium">
-                                  {formatMoney(
-                                    (item.product.discount&& item.product.discount !== null ? item.product.price * (1 - item.product.discount.rate / 100) : item.product.price) * item.quantity
+                                  {AmountFormat(
+                                    ((item.product.discount &&
+                                    item.product.discount !== null
+                                      ? item.product.price *
+                                        (1 - item.product.discount.rate / 100)
+                                      : item.product.price) * item.quantity).toString()
                                   )}
                                 </div>
                                 <div className="text-xs text-muted-foreground flex items-center gap-1">
-  {item.product.discount && item.product.discount.rate > 0 ? (
-    <div className="flex items-center gap-1">
-      <span className="font-medium">
-        {item.quantity} × {(item.product.price * (1 - item.product.discount.rate / 100)).toFixed(2)} Rwf
-      </span>
-      <span className="text-muted-foreground/70 line-through text-[11px]">
-        {(item.quantity * item.product.price).toFixed(2)}
-      </span>
-      <Badge variant="outline" className="h-3.5 px-1 text-[9px] border-red-200 text-red-600 bg-red-50">
-        {item.product.discount.rate}% off
-      </Badge>
-    </div>
-  ) : (
-    <span className="font-medium">
-      {item.quantity} × {formatMoney(item.product.price)}
-    </span>
-  )}
-</div>
+                                  {item.product.discount &&
+                                  item.product.discount.rate > 0 ? (
+                                    <div className="flex items-center gap-1">
+                                      <span className="font-medium">
+                                        {item.quantity} ×{" "}
+                                        {(
+                                          item.product.price *
+                                          (1 - item.product.discount.rate / 100)
+                                        ).toFixed(2)}{" "}
+                                        Rwf
+                                      </span>
+                                      <span className="text-muted-foreground/70 line-through text-[11px]">
+                                        {(
+                                          item.quantity * item.product.price
+                                        ).toFixed(2)}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="h-3.5 px-1 text-[9px] border-red-200 text-red-600 bg-red-50"
+                                      >
+                                        {item.product.discount.rate}% off
+                                      </Badge>
+                                    </div>
+                                  ) : (
+                                    <span className="font-medium">
+                                      {item.quantity} ×{" "}
+                                      {AmountFormat(item.product.price.toString())}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
@@ -888,7 +913,7 @@ export function OrderDetailsDialog({
                 <div className="text-sm">
                   <span className="text-muted-foreground">Total Amount: </span>
                   <span className="font-medium">
-                    {formatMoney(totalOrderAmount)}
+                    {AmountFormat(totalOrderAmount.toString())}
                   </span>
                 </div>
               </div>

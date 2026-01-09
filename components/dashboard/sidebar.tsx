@@ -74,11 +74,11 @@ const managerNavigationSections = [
         href: "/dashboard/bar/manager/stock-master",
         icon: PackagePlus,
       },
-      {
-        name: "EBM Stock Movement",
-        href: "/dashboard/bar/manager/stock-movement",
-        icon: PackageMinus,
-      },
+      // {
+      //   name: "EBM Stock Movement",
+      //   href: "/dashboard/bar/manager/stock-movement",
+      //   icon: PackageMinus,
+      // },
       
       {
         name: "Imported",
@@ -155,6 +155,14 @@ const distributorNavigation = [
   {
     name: "My Orders",
     href: "/dashboard/bar/waiters/orders",
+    icon: ClipboardList,
+  },
+];
+
+const chefNavigation = [
+  {
+    name: "My Orders",
+    href: "/dashboard/bar/chef/orders",
     icon: ClipboardList,
   },
 ];
@@ -301,13 +309,38 @@ function SidebarContent() {
     });
   };
 
+
+  const renderChefNavigation = () => {
+    return chefNavigation.map((item) => {
+      const Icon = item.icon;
+      const isActive = pathname === item.href;
+      return (
+        <Link
+          key={item.name}
+          href={item.href}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+            isActive
+              ? "bg-primary text-primary-foreground"
+              : "text-gray-300 hover:bg-white/10 hover:text-white"
+          )}
+        >
+          <Icon className="h-5 w-5" />
+          {item.name}
+        </Link>
+      );
+    });
+  };
+
   const renderNavigation = () => {
     if (user?.role === "MANAGER") {
       return renderManagerNavigation();
     } else if (user?.role === "PARTNER_ADMIN") {
       return renderAdminNavigation();
-    } else {
+    } else if(user?.role === "WAITER") {
       return renderDistributorNavigation();
+    }else{
+      return renderChefNavigation();
     }
   };
 

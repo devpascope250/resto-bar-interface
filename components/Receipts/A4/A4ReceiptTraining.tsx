@@ -1,3 +1,4 @@
+import { AmountFormat } from "@/lib/AmountFormat";
 import { DateUtils } from "@/lib/date-utils";
 import React from "react";
 import QRCode from "react-qr-code";
@@ -163,6 +164,19 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
 
                 <td className="border-l border-r border-black p-1">
                   {item.name}
+                   {item.discount ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "10px",
+                      }}
+                    >
+                      <span>discount -{item.discount}%</span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-center">
@@ -174,11 +188,18 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.unitPrice.toFixed(2)}
+                  {AmountFormat(item.unitPrice.toString(),2, false)}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {item.total.toFixed(2)}
+                  {AmountFormat(item.total.toString(), 2, false)}
+                  {item.discount ? (
+                    <span><br />
+                      {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    </span>
+                  ) : (
+                    ""
+                  )}
                 </td>
               </tr>
             ))}
@@ -218,7 +239,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (NS)
+              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (TS)
             </p>
             
             <div
@@ -248,14 +269,14 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Rwf</td>
                     <td className="border border-black p-1 text-right">
-                      {totals.total.toFixed(2)}
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   {totals.totalAEx ? (
                     <tr>
                       <td className="border border-black p-1">Total A Ex</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalAEx.toFixed(2)}
+                        {AmountFormat(totals.totalAEx.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -266,7 +287,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total C</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalC.toFixed(2)}
+                        {AmountFormat(totals.totalC.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -277,7 +298,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total D</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalD.toFixed(2)}
+                        {AmountFormat(totals.totalD.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -287,7 +308,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total B-18%</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalB.toFixed(2)}
+                        {AmountFormat(totals.totalB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -297,7 +318,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total Tax-B</td>
                       <td className="border border-black p-1 text-right">
-                        {totals.totalTaxB.toFixed(2)}
+                        {AmountFormat(totals.totalTaxB.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -306,7 +327,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
-                      {totals.totalTax.toFixed(2)}
+                      {AmountFormat(totals.totalTax.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>

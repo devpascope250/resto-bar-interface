@@ -761,6 +761,7 @@ import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import DateTimeHelper from "@/lib/date-time";
 import { useDebounce } from "@/hooks/useDebounce";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 interface OrderStats {
   countOrders: number;
@@ -1392,7 +1393,7 @@ export default function DashboardPage() {
                         {order.status.toLocaleLowerCase()}
                       </Badge>
                       <p className="font-medium text-foreground">
-                        {order.totalPrice.toFixed(2)} Rwf
+                        {AmountFormat(order.totalPrice.toString())}
                       </p>
                     </div>
                   </div>
