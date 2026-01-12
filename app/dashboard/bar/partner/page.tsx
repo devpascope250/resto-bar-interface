@@ -7,6 +7,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { useApi } from "@/hooks/api-hooks";
 import { Badge } from "@/components/ui/badge";
 import { keepPreviousData } from "@tanstack/react-query";
+import { AmountFormat } from "@/lib/AmountFormat";
 interface OrderStats {
   countOrders: number;
   countProducts: number;
@@ -64,7 +65,7 @@ export default function DashboardPage() {
     },
     {
       title: "Total Revenue",
-      value: `${dataStats?.qstats.revenues.toFixed(2) || "0.00"} Rwf`,
+      value: `${AmountFormat(dataStats?.qstats.revenues.toString() || "0.00")}`,
       icon: DollarSign,
       description: "All time",
     },
@@ -103,7 +104,7 @@ export default function DashboardPage() {
                   <Skeleton className="h-8 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold text-foreground">
+                    <div className={`${stat.title === "Total Revenue" ? "text-sm" : "text-2xl"} font-bold text-foreground`}>
                       {stat.value}
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -144,8 +145,8 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                         <Badge variant={order.status === "COMPLETED" ? "default" : "destructive"}>{order.status.toLocaleLowerCase()}</Badge>
-                      <p className="font-medium text-foreground">
-                        {order.totalPrice.toFixed(2)} Rwf
+                      <p className="font-medium text-sm text-foreground">
+                        {AmountFormat(order.totalPrice.toString())} Rwf
                       </p>
                       
                     </div>

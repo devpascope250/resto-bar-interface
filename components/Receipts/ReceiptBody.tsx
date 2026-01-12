@@ -55,6 +55,7 @@ const ReceiptBody: React.FC<ReceiptProps> = ({ data }) => {
     cisTime: new Date(),
     sdcId: dtmod.response?.sdcId ?? "",
     receiptNumber: dtmod.invcNo?.toString() ?? "",
+    ebmReceiptNo: dtmod.response?.rcptNo?.toString() ?? "",
     referenceId: dtmod.orgInvcNo.toString(),
     internalData: dtmod.response?.intrlData ?? "",
     receiptSignature: dtmod.response?.rcptSign ?? "",

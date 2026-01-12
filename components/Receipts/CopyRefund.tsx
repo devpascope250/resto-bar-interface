@@ -40,6 +40,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     referenceId?: string;
     internalData: string;
     receiptSignature: string;
@@ -68,6 +69,7 @@ const CopyRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
     sdcId,
     referenceId,
     receiptNumber,
+    ebmReceiptNo,
     internalData,
     receiptSignature,
     mrc,
@@ -79,7 +81,7 @@ const CopyRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
     <div
       className="receipt"
       style={{
-        width: "80mm",
+        width: "100mm",
         minHeight: "100%",
         padding: "4mm",
         fontSize: "12px",
@@ -95,36 +97,30 @@ const CopyRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
       }}
     >
       {/* Header */}
-      <div className="grid grid-cols-3 items-center justify-between p-4 pb-4">
-          {/* Left Logo */}
-          <div>
-            <img
-              src="/receiptLogo/logo1.png"
-              alt="Logo 1"
-              className="h-13 w-auto object-contain"
-            />
-          </div>
-
-          {/* Center Content */}
-          <div className="text-center leading-tight">
-
-           <DisplayMessage message={commercialMessage ?? ""} />
-             <div
-        style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center", margin: "1mm", marginTop: "3mm"}}
-      >
-        COPY
-      </div>
-          </div>
-
-          {/* Right Logo */}
-          <div className="flex justify-end">
-            <img
-              src="/receiptLogo/logo2.png"
-              alt="Logo 2"
-              className="h-13 w-auto object-contain"
-            />
-          </div>
-        </div>
+      <div className="grid grid-cols-[auto_1fr_auto] items-center p-4 pb-4">
+              {/* Left Logo */}
+              <div>
+                <img
+                  src="/receiptLogo/logo1.png"
+                  alt="Logo 1"
+                  className="h-13 w-auto object-contain"
+                />
+              </div>
+      
+              {/* Center Content */}
+              <div className="text-center leading-tight min-w-0">
+                <DisplayMessage message={commercialMessage ?? ""} />
+              </div>
+      
+              {/* Right Logo */}
+              <div className="flex justify-end mb-3">
+                <img
+                  src="/receiptLogo/logo2.png"
+                  alt="Logo 2"
+                  className="h-13 w-auto object-contain"
+                />
+              </div>
+            </div>
 
         <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
         <div>TIN: {clientId}</div>
@@ -373,7 +369,7 @@ const CopyRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>RECEIPT NUMBER:</span>
-            <span>{receiptNumber}/{receiptNumber}NR</span>
+            <span>{ebmReceiptNo}/{ebmReceiptNo}NR</span>
            
           </div>
         </div>
@@ -406,7 +402,7 @@ const CopyRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
       {/* QR Code */}
       <div style={{ display: 'flex', justifyContent: 'center', margin: '2mm 0' }}>
         <QRCode 
-          value={`${DateUtils.parse(date).toLocaleDateString()}#${DateUtils.parse(time).toLocaleTimeString()}#${sdcId}#${receiptNumber}/${receiptNumber}NR#${internalData?.padEnd(40,'')?.match(/.{1,4}/g)?.join('-')}#${receiptSignature?.padEnd(20,'')?.match(/.{1,4}/g)?.join('-')}`} 
+          value={`${DateUtils.parse(date).toLocaleDateString()}#${DateUtils.parse(time).toLocaleTimeString()}#${sdcId}#${ebmReceiptNo}/${ebmReceiptNo}NR#${internalData?.padEnd(40,'')?.match(/.{1,4}/g)?.join('-')}#${receiptSignature?.padEnd(20,'')?.match(/.{1,4}/g)?.join('-')}`} 
           size={60} 
         />
       </div>

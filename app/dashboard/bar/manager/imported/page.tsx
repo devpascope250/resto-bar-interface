@@ -371,7 +371,7 @@ useEffect(() => {
                 handleSelectedProduct(value);
               }}
               options={products
-                ?.filter((p) => p.itemCd !== null)
+                ?.filter((p) => p.itemCd !== null && p.itemTyCd !== "3")
                 .map((prod) => {
                   return {
                     value: prod.itemCd,

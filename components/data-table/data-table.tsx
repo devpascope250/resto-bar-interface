@@ -54,6 +54,7 @@ interface DataTableProps<TData, TValue> {
   // 👇 New loading prop
   isRefetching?: boolean;
   isLoading?: boolean;
+  additionalFilters?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -66,6 +67,7 @@ export function DataTable<TData, TValue>({
   dateFilterPlaceholder = "Filter by date",
   isRefetching = false,
   isLoading = false,
+  additionalFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -208,6 +210,13 @@ export function DataTable<TData, TValue>({
                 )}
               </div>
             )}
+            {
+              additionalFilters && (
+                <div className="flex items-center gap-2">
+                  {additionalFilters}
+                </div>
+              )
+            }
           </div>
 
           <DropdownMenu>

@@ -41,6 +41,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     referenceId?: string;
     receiptSignature: string;
@@ -68,6 +69,7 @@ const A4ReceiptRefundCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
     cisTime,
     sdcId,
     receiptNumber,
+    ebmReceiptNo,
     referenceId,
     internalData,
     receiptSignature,
@@ -251,7 +253,7 @@ const A4ReceiptRefundCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (NR)
+              RECEIPT NUMBER: {ebmReceiptNo}/{ebmReceiptNo} (NR)
             </p>
             <p>
               Internal Data:{" "}
@@ -302,7 +304,7 @@ const A4ReceiptRefundCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                       date
                     ).toLocaleDateString()}#${DateUtils.parse(
                       time
-                    ).toLocaleTimeString()}#${sdcId}#${receiptNumber}/${receiptNumber} NR#${internalData
+                    ).toLocaleTimeString()}#${sdcId}#${ebmReceiptNo}/${ebmReceiptNo} NR#${internalData
                       ?.padEnd(40, "")
                       ?.match(/.{1,4}/g)
                       ?.join("-")}#${receiptSignature

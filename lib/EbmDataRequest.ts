@@ -65,8 +65,12 @@ export class EbmDataRequest extends ApiService {
         return await this.fetch('/savePurchases', "POST", data);
     }
 
-    async generateSalesReport(start_date?: string, end_date?: string): Promise<any> {
-        return await this.fetch(`/generate-sales-report?${start_date && end_date ? `startDate=${start_date}&endDate=${end_date}&` : ''}`);
+    async generateSalesReport(reportType: string,start_date?: string, end_date?: string): Promise<any> {
+        return await this.fetch(`/generate-sales-report?${reportType ? `reportType=${reportType}&` : ''}${start_date && end_date ? `startDate=${start_date}&endDate=${end_date}&` : ''}`);
+    }
+
+    async generateSalesXreport(start_date?: string, end_date?: string): Promise<any> {
+        return await this.fetch(`/generate-sales-xreport?${start_date && end_date ? `startDate=${start_date}&endDate=${end_date}&` : ''}`);
     }
 
      async getLatestSalesInvoiceId(): Promise<any> {

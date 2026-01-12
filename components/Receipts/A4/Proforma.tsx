@@ -34,6 +34,7 @@ interface ReceiptProps {
       amount: number;
     };
     itemsNumber: number;
+    ebmReceiptNo: string;
     date: string;
     time: string;
     cisDate: Date;
@@ -60,6 +61,7 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
     totals,
     payment,
     itemsNumber,
+    ebmReceiptNo,
     date,
     time,
     cisDate,
@@ -240,7 +242,7 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (PS)
+              RECEIPT NUMBER: {ebmReceiptNo}/{ebmReceiptNo} (PS)
             </p>
             <div
               style={{ borderBottom: "1px solid #000", margin: "2mm 0" }}

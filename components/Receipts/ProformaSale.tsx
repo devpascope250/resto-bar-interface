@@ -1,8 +1,8 @@
-import { DateUtils } from '@/lib/date-utils';
-import React from 'react';
-import QRCode from 'react-qr-code';
-import { DisplayMessage } from './A4/A4Receipt';
-import { AmountFormat } from '@/lib/AmountFormat';
+import { DateUtils } from "@/lib/date-utils";
+import React from "react";
+import QRCode from "react-qr-code";
+import { DisplayMessage } from "./A4/A4Receipt";
+import { AmountFormat } from "@/lib/AmountFormat";
 
 interface ReceiptProps {
   receiptData: {
@@ -40,6 +40,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     receiptSignature: string;
     mrc: string;
@@ -49,127 +50,160 @@ interface ReceiptProps {
 }
 
 const ProformaSale: React.FC<ReceiptProps> = ({ receiptData }) => {
-   const {
-     tradeName,
-     address,
-     tin,
-     clientId,
-     customerMobile,
-     customerName,
-     items,
-     totals,
-     payment,
-     itemsNumber,
-     date,
-     time,
-     cisDate,
-     cisTime,
-     sdcId,
-     receiptNumber,
-     mrc,
-     thankYouMessage,
-     commercialMessage
-   } = receiptData;
- 
-   return (
-     <div
-       className="receipt"
-       style={{
-         width: '80mm',
-         minHeight: '100%',
-         padding: '4mm',
-         fontSize: '12px',
-         color: '#000',
-         background: '#fff',
-         fontFamily: 'monospace, Courier, sans-serif',
-         fontWeight: '500',
-         border: '1px solid #000',
-         display: 'flex',
-         flexDirection: 'column',
-         gap: '2mm',
-         lineHeight: '1.2',
-       }}
-     >
-       {/* Header */}
-       <div className="grid grid-cols-3 items-center justify-between p-4 pb-4">
-          {/* Left Logo */}
-          <div>
-            <img
-              src="/receiptLogo/logo1.png"
-              alt="Logo 1"
-              className="h-13 w-auto object-contain"
-            />
-          </div>
+  const {
+    tradeName,
+    address,
+    tin,
+    clientId,
+    customerMobile,
+    customerName,
+    items,
+    totals,
+    payment,
+    itemsNumber,
+    date,
+    time,
+    cisDate,
+    cisTime,
+    sdcId,
+    receiptNumber,
+    ebmReceiptNo,
+    mrc,
+    thankYouMessage,
+    commercialMessage,
+  } = receiptData;
 
-          {/* Center Content */}
-          <div className="text-center leading-tight">
-            <DisplayMessage message={commercialMessage ?? ""} />
-           
-          </div>
+  return (
+    <div
+      className="receipt"
+      style={{
+        width: "100mm",
+        minHeight: "100%",
+        padding: "4mm",
+        fontSize: "12px",
+        color: "#000",
+        background: "#fff",
+        fontFamily: "monospace, Courier, sans-serif",
+        fontWeight: "500",
+        border: "1px solid #000",
+        display: "flex",
+        flexDirection: "column",
+        gap: "2mm",
+        lineHeight: "1.2",
+      }}
+    >
+      {/* Header */}
+      <div className="grid grid-cols-[auto_1fr_auto] items-center p-4 pb-4">
+              {/* Left Logo */}
+              <div>
+                <img
+                  src="/receiptLogo/logo1.png"
+                  alt="Logo 1"
+                  className="h-13 w-auto object-contain"
+                />
+              </div>
+      
+              {/* Center Content */}
+              <div className="text-center leading-tight min-w-0">
+                <DisplayMessage message={commercialMessage ?? ""} />
+              </div>
+      
+              {/* Right Logo */}
+              <div className="flex justify-end mb-3">
+                <img
+                  src="/receiptLogo/logo2.png"
+                  alt="Logo 2"
+                  className="h-13 w-auto object-contain"
+                />
+              </div>
+            </div>
+      <div
+        style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center" }}
+      >
+        PROFORMA
+      </div>
 
-          {/* Right Logo */}
-          <div className="flex justify-end">
-            <img
-              src="/receiptLogo/logo2.png"
-              alt="Logo 2"
-              className="h-13 w-auto object-contain"
-            />
+      <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+      {/* Welcome Message */}
+      <div style={{ textAlign: "center" }}>
+        <div>TIN: {clientId}</div>
+        <div>CLIENT NAME: {customerName}</div>
+        <div>TEL: {customerMobile}</div>
+      </div>
+
+      {/* Separator */}
+      <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+      {/* Items List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1mm" }}>
+        {items.map((item, index) => (
+          <div key={index} style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>{item.name}</span>
+              <span>
+                {AmountFormat(item.total.toString(), 2, false)} &nbsp;
+                {item.taxType}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "10px",
+              }}
+            >
+              {AmountFormat(item.unitPrice.toString(), 2, false)} x{" "}
+              {item.quantity.toFixed(2)}
+            </div>
+            {item.discount ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                }}
+              >
+                <span>discount -{item.discount}%</span>
+                <span>
+                  {AmountFormat(
+                    (item.total * (1 - item.discount / 100)).toString(),
+                    2,
+                    false
+                  )}
+                </span>
+              </div>
+            ) : (
+              ""
+            )}
           </div>
+        ))}
+      </div>
+
+      <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+      <div
+        style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center" }}
+      >
+        THIS IS NOT AN OFFICIAL RECEIPT
+      </div>
+
+      {/* Separator */}
+      <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+      {/* Totals */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1mm" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+          }}
+        >
+          <span>TOTAL</span>
+          <span>{(totals.total.toString(), 2, false)}</span>
         </div>
-        <div style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center"}}>
-         PROFORMA
-       </div>
-
-      <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0' }}></div>
-
- 
-       {/* Welcome Message */}
-       <div style={{ textAlign: 'center' }}>
-         <div>TIN: {clientId}</div> 
-         <div>CLIENT NAME: {customerName}</div>
-         <div>TEL: {customerMobile}</div>
-       </div>
- 
-       {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0' }}></div>
- 
-       {/* Items List */}
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
-         {items.map((item, index) => (
-           <div key={index} style={{ display: 'flex', flexDirection: 'column' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-               <span>{item.name}</span>
-               <span>{AmountFormat(item.total.toString(), 2, false)} &nbsp;{item.taxType}</span>
-             </div>
-             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-               {AmountFormat(item.unitPrice.toString(), 2, false)} x {item.quantity.toFixed(2)}
-             </div>
-             {item.discount ? (
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-                 <span>discount -{item.discount}%</span>
-                 <span>{AmountFormat((item.total * (1 - item.discount/100)).toString(), 2, false)}</span>
-               </div>
-             ) : ""}
-           </div>
-         ))}
-       </div>
- 
-        <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
- 
-       <div style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center"}}>
-         THIS IS NOT AN OFFICIAL RECEIPT
-       </div>
- 
-       {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0' }}></div>
- 
-       {/* Totals */}
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-           <span>TOTAL</span>
-           <span>{(totals.total.toString(), 2, false)}</span>
-         </div>
-         {totals.totalC ? (
+        {totals.totalC ? (
           <div
             style={{
               display: "flex",
@@ -180,7 +214,9 @@ const ProformaSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             <span>TOTAL C</span>
             <span>{AmountFormat(totals.totalC.toString(), 2, false)}</span>
           </div>
-        ) : ""}
+        ) : (
+          ""
+        )}
         {totals.totalD ? (
           <div
             style={{
@@ -190,9 +226,11 @@ const ProformaSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             }}
           >
             <span>TOTAL D</span>
-            <span>{AmountFormat(totals.totalD.toString(),2, false)}</span>
+            <span>{AmountFormat(totals.totalD.toString(), 2, false)}</span>
           </div>
-        ): ""}
+        ) : (
+          ""
+        )}
         {totals.totalAEx ? (
           <div
             style={{
@@ -204,18 +242,37 @@ const ProformaSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             <span>TOTAL A-EX</span>
             <span>{AmountFormat(totals.totalAEx.toString())}</span>
           </div>
-        ) : ""}
-        {totals.totalB ? <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-          }}
-        >
-          <span>TOTAL B-18.00%</span>
-          <span>{AmountFormat(totals.totalB.toString(), 2, false)}</span>
-        </div> : ""} 
-        {totals.totalTaxB ? 
+        ) : (
+          ""
+        )}
+        {totals.totalB ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+            }}
+          >
+            <span>TOTAL B-18.00%</span>
+            <span>{AmountFormat(totals.totalB.toString(), 2, false)}</span>
+          </div>
+        ) : (
+          ""
+        )}
+        {totals.totalTaxB ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+            }}
+          >
+            <span>TOTAL TAX B</span>
+            <span>{AmountFormat(totals.totalTaxB.toString(), 2, false)}</span>
+          </div>
+        ) : (
+          ""
+        )}
         <div
           style={{
             display: "flex",
@@ -223,90 +280,141 @@ const ProformaSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             fontSize: "10px",
           }}
         >
-          <span>TOTAL TAX B</span>
-          <span>{AmountFormat(totals.totalTaxB.toString(), 2, false)}</span>
-        </div> : ""
-        }
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-           <span>TOTAL TAX</span>
-           <span>{AmountFormat(totals.totalTax.toString(), 2, false)}</span>
-         </div>
-          {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0' }}></div>
- 
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-           <span>{payment.method}</span>
-           <span>{AmountFormat(payment.amount.toString())}</span>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-           <span>ITEMS NUMBER</span>
-           <span>{itemsNumber}</span>
-         </div>
-       </div>
- 
-       <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
- 
-       <div style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center"}}>
-         PROFORMA
-       </div>
- 
-       {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0', gap: '1mm' }}></div>
- 
-       {/* SDC Information */}
-       <div style={{ fontSize: '10px' }}>
-         <div style={{ fontWeight: 'bold', textAlign: 'center' }}>SDC INFORMATION</div>
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-           <span>DATE: {DateUtils.parse(date).toLocaleDateString()}</span>
-           <span>TIME: {DateUtils.parse(time).toLocaleTimeString()}</span>
-         </div>
- 
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-           <span>SDC ID:</span>
-           <span>{sdcId}</span>
-         </div> 
- 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-           <span>RECEIPT NUMBER:</span>
-           <span>{receiptNumber}/{receiptNumber} PS</span>
-         </div>
-         </div>
- 
-       </div>
- 
- 
-         {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0', gap: '1mm' }}></div>
- 
- 
-       {/* CIS Information */}
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '1mm' }}>
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-             <span>RECEIPT NUMBER:</span>
-             <span>{receiptNumber}</span>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-             <span>DATE: {cisDate.toLocaleDateString()}</span>
-             <span>TIME: {cisTime.toLocaleTimeString()}</span>
-         </div>
-         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-             <span>MRC: </span>
-             <span>{mrc}</span>
-         </div>
-       </div>
-         {/* Separator */}
-       <div style={{ borderBottom: '1px dashed #000', margin: '1mm 0', gap: '1mm' }}></div>
- 
- 
-       {/* Footer */}
-       <div style={{ textAlign: 'center', marginTop: '2mm' }}>
-         <div style={{ fontWeight: 'bold' }}>THANK YOU</div>
-         <div>COME BACK AGAIN</div>
-         <div style={{ fontWeight: 'bold' }}>{thankYouMessage}</div>
-       </div>
-     </div>
-   );
+          <span>TOTAL TAX</span>
+          <span>{AmountFormat(totals.totalTax.toString(), 2, false)}</span>
+        </div>
+        {/* Separator */}
+        <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+          }}
+        >
+          <span>{payment.method}</span>
+          <span>{AmountFormat(payment.amount.toString())}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+          }}
+        >
+          <span>ITEMS NUMBER</span>
+          <span>{itemsNumber}</span>
+        </div>
+      </div>
+
+      <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
+
+      <div
+        style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center" }}
+      >
+        PROFORMA
+      </div>
+
+      {/* Separator */}
+      <div
+        style={{ borderBottom: "1px dashed #000", margin: "1mm 0", gap: "1mm" }}
+      ></div>
+
+      {/* SDC Information */}
+      <div style={{ fontSize: "10px" }}>
+        <div style={{ fontWeight: "bold", textAlign: "center" }}>
+          SDC INFORMATION
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1mm" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+            }}
+          >
+            <span>DATE: {DateUtils.parse(date).toLocaleDateString()}</span>
+            <span>TIME: {DateUtils.parse(time).toLocaleTimeString()}</span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+            }}
+          >
+            <span>SDC ID:</span>
+            <span>{sdcId}</span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+            }}
+          >
+            <span>RECEIPT NUMBER:</span>
+            <span>
+              {ebmReceiptNo}/{ebmReceiptNo} PS
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Separator */}
+      <div
+        style={{ borderBottom: "1px dashed #000", margin: "1mm 0", gap: "1mm" }}
+      ></div>
+
+      {/* CIS Information */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1mm" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+          }}
+        >
+          <span>RECEIPT NUMBER:</span>
+          <span>{receiptNumber}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+          }}
+        >
+          <span>DATE: {cisDate.toLocaleDateString()}</span>
+          <span>TIME: {cisTime.toLocaleTimeString()}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+          }}
+        >
+          <span>MRC: </span>
+          <span>{mrc}</span>
+        </div>
+      </div>
+      {/* Separator */}
+      <div
+        style={{ borderBottom: "1px dashed #000", margin: "1mm 0", gap: "1mm" }}
+      ></div>
+
+      {/* Footer */}
+      <div style={{ textAlign: "center", marginTop: "2mm" }}>
+        <div style={{ fontWeight: "bold" }}>THANK YOU</div>
+        <div>COME BACK AGAIN</div>
+        <div style={{ fontWeight: "bold" }}>{thankYouMessage}</div>
+      </div>
+    </div>
+  );
 };
 
 export default ProformaSale;

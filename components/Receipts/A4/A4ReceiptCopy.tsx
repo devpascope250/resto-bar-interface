@@ -284,6 +284,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     receiptSignature: string;
     mrc: string;
@@ -310,6 +311,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
     cisTime,
     sdcId,
     receiptNumber,
+    ebmReceiptNo,
     internalData,
     receiptSignature,
     mrc,

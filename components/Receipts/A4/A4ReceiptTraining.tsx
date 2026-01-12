@@ -40,6 +40,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     receiptSignature: string;
     mrc: string;
@@ -66,6 +67,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
     cisTime,
     sdcId,
     receiptNumber,
+    ebmReceiptNo,
     internalData,
     receiptSignature,
     mrc,
@@ -239,7 +241,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (TS)
+              RECEIPT NUMBER: {ebmReceiptNo}/{ebmReceiptNo} (TS)
             </p>
             
             <div

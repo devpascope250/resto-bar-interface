@@ -40,6 +40,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     receiptSignature: string;
     mrc: string;
@@ -66,6 +67,7 @@ const A4Receipt: React.FC<ReceiptProps> = ({ receiptData }) => {
     cisTime,
     sdcId,
     receiptNumber,
+    ebmReceiptNo,
     internalData,
     receiptSignature,
     mrc,
@@ -79,7 +81,7 @@ const A4Receipt: React.FC<ReceiptProps> = ({ receiptData }) => {
     <div className="w-full bg-white p-2 text-sm text-black">
       <div className="mx-auto max-w-1xl border-white p-4">
         {/* ================= HEADER ================= */}
-        <div className="grid grid-cols-3 items-center justify-between">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center">
           {" "}
           {/* No padding */}
           {/* Left Logo */}
@@ -93,7 +95,7 @@ const A4Receipt: React.FC<ReceiptProps> = ({ receiptData }) => {
             />
           </div>
           {/* Center Content */}
-          <div className="text-center leading-tight">
+          <div className="leading-tight">
             <DisplayMessage message={commercialMessage ?? ""} />
           </div>
           {/* Right Logo */}
@@ -232,7 +234,7 @@ const A4Receipt: React.FC<ReceiptProps> = ({ receiptData }) => {
             </p>
             <p>SDC ID: {sdcId}</p>
             <p>
-              RECEIPT NUMBER: {receiptNumber}/{receiptNumber} (NS)
+              RECEIPT NUMBER: {ebmReceiptNo}/{ebmReceiptNo} (NS)
             </p>
             <p>
               Internal Data:{" "}
@@ -283,7 +285,7 @@ const A4Receipt: React.FC<ReceiptProps> = ({ receiptData }) => {
                       date
                     ).toLocaleDateString()}#${DateUtils.parse(
                       time
-                    ).toLocaleTimeString()}#${sdcId}#${receiptNumber}/${receiptNumber} NS#${internalData
+                    ).toLocaleTimeString()}#${sdcId}#${ebmReceiptNo}/${ebmReceiptNo} NS#${internalData
                       ?.padEnd(40, "")
                       ?.match(/.{1,4}/g)
                       ?.join("-")}#${receiptSignature
@@ -398,14 +400,14 @@ export const DisplayMessage = ({ message }: { message: string }) => {
   const lines = formattedMessage.split("\n");
 
   return (
-    <div>
+    <div className="text-center content-justify-center">
       <h2
         style={{fontWeight: "bold" }}
         className="text-[14px]"
       >
         {lines[0]}
       </h2>
-      <div style={{ whiteSpace: "pre-line" }}>{lines.slice(1).join("\n")}</div>
+      <div className="whitespace-pre overflow-x-auto print:overflow-visible print:no-scrollbar">{lines.slice(1).join("\n")}</div>
     </div>
   );
 };

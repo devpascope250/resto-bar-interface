@@ -40,6 +40,7 @@ interface ReceiptProps {
     cisTime: Date;
     sdcId: string;
     receiptNumber: string;
+    ebmReceiptNo: string;
     internalData: string;
     receiptSignature: string;
     mrc: string;
@@ -67,6 +68,7 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
     sdcId,
     receiptNumber,
     internalData,
+    ebmReceiptNo,
     receiptSignature,
     mrc,
     thankYouMessage,
@@ -77,7 +79,7 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
     <div
       className="receipt"
       style={{
-        width: "80mm",
+        width: "100mm",
         minHeight: "100%",
         padding: "4mm",
         fontSize: "12px",
@@ -93,7 +95,7 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
       }}
     >
       {/* Header */}
-      <div className="grid grid-cols-3 items-center justify-between p-4 pb-4">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center p-4 pb-4">
         {/* Left Logo */}
         <div>
           <img
@@ -104,12 +106,12 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
         </div>
 
         {/* Center Content */}
-        <div className="text-center leading-tight">
+        <div className="text-center leading-tight min-w-0">
           <DisplayMessage message={commercialMessage ?? ""} />
         </div>
 
         {/* Right Logo */}
-        <div className="flex justify-end">
+        <div className="flex justify-end mb-3">
           <img
             src="/receiptLogo/logo2.png"
             alt="Logo 2"
@@ -335,7 +337,7 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
           >
             <span>RECEIPT NUMBER:</span>
             <span>
-              {receiptNumber}/{receiptNumber} NS
+              {ebmReceiptNo}/{ebmReceiptNo} NS
             </span>
           </div>
         </div>
@@ -375,7 +377,7 @@ const NormalSale: React.FC<ReceiptProps> = ({ receiptData }) => {
             date
           ).toLocaleDateString()}#${DateUtils.parse(
             time
-          ).toLocaleTimeString()}#${sdcId}#${receiptNumber}/${receiptNumber} NS#${internalData
+          ).toLocaleTimeString()}#${sdcId}#${ebmReceiptNo}/${ebmReceiptNo} NS#${internalData
             ?.padEnd(40, "")
             ?.match(/.{1,4}/g)
             ?.join("-")}#${receiptSignature
