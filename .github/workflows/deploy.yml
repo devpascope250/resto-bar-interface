@@ -47,20 +47,18 @@ jobs:
           script: |
             cd /var/www/quicko.rw
 
-            # Make sure code is up-to-date
+            # Ensure repo is on main branch and up-to-date
+            git checkout main
             git fetch --all
             git reset --hard origin/main
 
             # Install dependencies
             npm install
 
-            # Build Next.js for production
+            # Build Next.js
             npm run build
 
-            # Restart PM2 process (creates it if it doesn't exist)
+            # Start or reload PM2
             pm2 describe quicko.rw || pm2 start npm --name quicko.rw -- start
-
-            # If process exists, reload with updated env
             pm2 restart quicko.rw --update-env
-
             pm2 save
