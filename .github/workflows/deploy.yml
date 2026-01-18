@@ -25,7 +25,6 @@
 
 
 
-
 name: Deploy to VPS_QUICKO
 
 on:
@@ -46,18 +45,22 @@ jobs:
           key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/quicko.rw/resto-bar-interface
-
-            # Ensure repo is on main branch and up-to-date
+            
+            # Clean up and reset completely
+            git clean -fd
             git checkout main
             git fetch --all
             git reset --hard origin/main
-
+            
+            # Force clean to remove untracked files
+            git clean -fd
+            
             # Install dependencies
             npm install --legacy-peer-deps
-
+            
             # Build Next.js
             npm run build
-
+            
             # Start or reload PM2
             pm2 describe resto-bar-interface || pm2 start npm --name resto-bar-interface -- start
             pm2 restart resto-bar-interface --update-env
