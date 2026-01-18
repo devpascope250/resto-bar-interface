@@ -44,24 +44,34 @@ jobs:
           username: quicko
           key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/quicko.rw/resto-bar-interface
+            # Navigate to parent directory
+            cd /var/www/quicko.rw
             
-            # Clean up and reset completely
-            git clean -fd
+            # Check if repository exists
+            if [ ! -d "resto-bar-interface/.git" ]; then
+              echo "Repository not found or corrupted. Cloning fresh..."
+              rm -rf resto-bar-interface
+              git clone https://github.com/devpascope250/resto-bar-interface.git
+            fi
+            
+            cd resto-bar-interface
+            
+            # Pull latest changes
             git checkout main
             git fetch --all
             git reset --hard origin/main
             
-            # Force clean to remove untracked files
-            git clean -fd
+            # Clean build artifacts
+            rm -rf .next
+            rm -rf node_modules/.cache
             
             # Install dependencies
             npm install --legacy-peer-deps
             
-            # Build Next.js
+            # Build
             npm run build
             
-            # Start or reload PM2
-            pm2 describe resto-bar-interface || pm2 start npm --name resto-bar-interface -- start
-            pm2 restart resto-bar-interface --update-env
+            # Restart PM2
+            pm2 delete resto-bar-interface 2>/dev/null || true
+            pm2 start npm --name resto-bar-interface -- start
             pm2 save
