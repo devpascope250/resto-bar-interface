@@ -1,3 +1,31 @@
+# name: Deploy to VPS_QUICKO
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v1
+#         with:
+#           host: 51.75.74.204
+#           username: quicko
+#           key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
+#           script: |
+#             cd /var/www/quicko.rw
+#             git pull origin main
+#             npm install
+#             npm run build
+#             pm2 restart quicko.rw
+
+
+
+
 name: Deploy to VPS_QUICKO
 
 on:
@@ -18,7 +46,21 @@ jobs:
           key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/quicko.rw
-            git pull origin main
+
+            # Make sure code is up-to-date
+            git fetch --all
+            git reset --hard origin/main
+
+            # Install dependencies
             npm install
+
+            # Build Next.js for production
             npm run build
-            pm2 restart quicko.rw
+
+            # Restart PM2 process (creates it if it doesn't exist)
+            pm2 describe quicko.rw || pm2 start npm --name quicko.rw -- start
+
+            # If process exists, reload with updated env
+            pm2 restart quicko.rw --update-env
+
+            pm2 save
