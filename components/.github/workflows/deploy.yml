@@ -13,9 +13,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: YOUR_VPS_IP
-          username: YOUR_USER
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: 51.75.74.204
+          username: quicko
+          key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/quicko.rw
             git pull origin main
