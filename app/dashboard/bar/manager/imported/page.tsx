@@ -214,9 +214,6 @@ useEffect(() => {
     setImportedItems(newedited);
   };
 
-
-  console.log(fetchImportedItems);
-  
   return (
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">

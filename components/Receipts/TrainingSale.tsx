@@ -128,7 +128,7 @@ const TrainingSale: React.FC<ReceiptProps> = ({ receiptData }) => {
       {/* Welcome Message */}
       <div>
         <div>TIN: {clientId}</div>
-        <div>CLIENT NAME: {customerName}</div>
+        <div>NAME: {customerName}</div>
         <div>TEL: {customerMobile}</div>
       </div>
 

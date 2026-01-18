@@ -97,9 +97,9 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
           {/* Center Content */}
           <div className="text-center leading-tight">
             <DisplayMessage message={commercialMessage ?? ""} />
-            <div className="text-[14px] font-bold text-center mt-6"> 
-          TRAINING MODE
-        </div>
+            <div className="text-[14px] font-bold text-center mt-6">
+              TRAINING MODE
+            </div>
           </div>
           {/* Right Logo */}
           <div className="flex justify-end pt-1">
@@ -166,7 +166,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
 
                 <td className="border-l border-r border-black p-1">
                   {item.name}
-                   {item.discount ? (
+                  {item.discount ? (
                     <div
                       style={{
                         display: "flex",
@@ -190,14 +190,19 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
-                  {AmountFormat(item.unitPrice.toString(),2, false)}
+                  {AmountFormat(item.unitPrice.toString(), 2, false)}
                 </td>
 
                 <td className="border-l border-r border-black p-1 text-right">
                   {AmountFormat(item.total.toString(), 2, false)}
                   {item.discount ? (
-                    <span><br />
-                      {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    <span>
+                      <br />
+                      {AmountFormat(
+                        (item.total * (1 - item.discount / 100)).toString(),
+                        2,
+                        false
+                      )}
                     </span>
                   ) : (
                     ""
@@ -223,7 +228,8 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
         </table>
         <div
           style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center" }}
-        >THIS IS NOT AN OFFICIAL RECEIPT
+        >
+          THIS IS NOT AN OFFICIAL RECEIPT
         </div>
 
         {/* ================= BOTTOM SECTION ================= */}
@@ -243,7 +249,7 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
             <p>
               RECEIPT NUMBER: {ebmReceiptNo}/{ebmReceiptNo} (TS)
             </p>
-            
+
             <div
               style={{ borderBottom: "1px solid #000", margin: "2mm 0" }}
               className="w-1/2"
@@ -330,6 +336,12 @@ const A4ReceiptTraining: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
                       {AmountFormat(totals.totalTax.toString(), 2, false)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">{payment.method}</td>
+                    <td className="border border-black p-1 text-right">
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>

@@ -112,7 +112,7 @@
 //     cell: ({ row }) => {
 //       const dateStr = row.getValue("salesDt") as string;
 //       // const date = dateStr ? DateUtils.parse(dateStr) : new Date();
-      
+
 //       return (
 //         <div className="flex flex-col">
 //           {/* <div className="font-medium">{format(date, "MMM dd, yyyy")}</div>
@@ -127,7 +127,7 @@
 //     cell: ({ row }) => {
 //       const dateStr = row.original.cfmDt;
 //       if (!dateStr) return <div className="text-muted-foreground">Not confirmed</div>;
-      
+
 //       // const date = DateUtils.parse(dateStr);
 //       return (
 //         <div className="flex flex-col">
@@ -155,7 +155,7 @@
 //     header: "Supplier Information",
 //     cell: ({ row }) => {
 //       const isPurchase = row.original.prcOrdCd === "PURCHASE";
-      
+
 //       return (
 //         <div className="space-y-1">
 //           <div className="font-medium">{row.original.spplrNm || "Unknown Supplier"}</div>
@@ -184,7 +184,7 @@
 //     cell: ({ row }) => {
 //       const receiptType = row.original.rcptTyCd;
 //       const paymentType = row.original.pmtTyCd;
-      
+
 //       return (
 //         <div className="space-y-1">
 //           <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@
 //     cell: ({ row }) => {
 //       const itemList = row.original.itemList || [];
 //       const firstItem = itemList[0];
-      
+
 //       return (
 //         <div className="space-y-2">
 //           <div className="font-medium">
@@ -353,14 +353,14 @@
 //           <DropdownMenuContent align="end">
 //             <DropdownMenuLabel>Actions</DropdownMenuLabel>
 //             <DropdownMenuSeparator />
-//             <DropdownMenuItem 
+//             <DropdownMenuItem
 //               className="cursor-pointer flex items-center gap-2"
 //               onClick={() => router.push(`/dashboard/transactions/${transaction.id}`)}
 //             >
 //               <Eye className="h-4 w-4" />
 //               View Transaction Details
 //             </DropdownMenuItem>
-//             <DropdownMenuItem 
+//             <DropdownMenuItem
 //               className="cursor-pointer flex items-center gap-2"
 //               onClick={() => {
 //                 console.log("Downloading invoice:", transaction.spplrInvcNo);
@@ -370,7 +370,7 @@
 //               Download Invoice
 //             </DropdownMenuItem>
 //             {transaction.itemList?.[0]?.itemCd && (
-//               <DropdownMenuItem 
+//               <DropdownMenuItem
 //                 className="cursor-pointer"
 //                 onClick={() => router.push(`/dashboard/inventory/${transaction?.itemList ? transaction?.itemList[0].itemCd : ''}`)}
 //               >
@@ -378,7 +378,7 @@
 //               </DropdownMenuItem>
 //             )}
 //             {transaction.spplrTin && (
-//               <DropdownMenuItem 
+//               <DropdownMenuItem
 //                 className="cursor-pointer"
 //                 onClick={() => router.push(`/dashboard/suppliers/${transaction.spplrTin}`)}
 //               >
@@ -386,7 +386,7 @@
 //               </DropdownMenuItem>
 //             )}
 //             {transaction.tin && transaction.spplrTin && (
-//               <DropdownMenuItem 
+//               <DropdownMenuItem
 //                 className="cursor-pointer"
 //                 onClick={() => router.push(`/dashboard/taxpayers/${transaction.tin}`)}
 //               >
@@ -400,33 +400,17 @@
 //   },
 // ];
 
+"use client";
 
-
-
-
-
-
-
-
-"use client"
-
-import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown, MoreHorizontal, Eye, Download, ShoppingCart, TrendingUp } from "lucide-react"
-import { format } from "date-fns"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useRouter } from "next/navigation"
-import { Badge } from "@/components/ui/badge"
-import { ItemsDialog } from "../dashboard/dialog/items-dialog"
-import DateTimeHelper from "@/lib/date-time"
-import { PaymentMethodCodeClassification } from "@/lib/codeDefinitions"
+import type { ColumnDef } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import DateTimeHelper from "@/lib/date-time";
+import { PaymentMethodCodeClassification } from "@/lib/codeDefinitions";
+import { useState } from "react";
 
 // Define the type for purchase/sales transactions
 export interface PurchaseSalesTransaction {
@@ -437,29 +421,30 @@ export interface PurchaseSalesTransaction {
   spplrNm?: string; // Supplier Name
   spplrBhfId?: string; // Supplier Branch Id
   spplrInvcNo?: number; // Supplier Invoice Number
-  prcOrdCd?: string | null // purchase Code
-  rcptTyCd?: string // Receipt type
-  pmtTyCd?: string  // payment Type code
-  cfmDt?: string // validated date
-  salesDt?: string // Sale Date
-  stockRlsDt?: string  // Stock Release date
-  totItemCnt?: number // Total Item Count
-  taxblAmtA?: number  // Taxable Amount A
-  taxblAmtB?: number  // Taxable Amount B
-  taxblAmtC?: number  // Taxable Amount c
-  taxblAmtD?: number  // Taxable Amount D
-  taxRtA?: number   // Tax Rate A
-  taxRtB?: number   // Tax Rate B
-  taxRtC?: number   // Tax Rate C
-  taxRtD?: number   // Tax Rate D
-  taxAmtA?: number   // Tax Amount A
-  taxAmtB?: number   // Tax Amount B
-  taxAmtC?: number   // Tax Amount C
-  taxAmtD?: number   // Tax Amount C
-  totTaxblAmt?: number // Total Taxable Amount
-  totTaxAmt?: number // Total Tax Amount
-  totAmt?: number   // Total Amount
-  remark?: string   // Remark
+  prcOrdCd?: string | null; // purchase Code
+  pchsSttsCd?: string; // pchsSttsCd
+  rcptTyCd?: string; // Receipt type
+  pmtTyCd?: string; // payment Type code
+  cfmDt?: string; // validated date
+  salesDt?: string; // Sale Date
+  stockRlsDt?: string; // Stock Release date
+  totItemCnt?: number; // Total Item Count
+  taxblAmtA?: number; // Taxable Amount A
+  taxblAmtB?: number; // Taxable Amount B
+  taxblAmtC?: number; // Taxable Amount c
+  taxblAmtD?: number; // Taxable Amount D
+  taxRtA?: number; // Tax Rate A
+  taxRtB?: number; // Tax Rate B
+  taxRtC?: number; // Tax Rate C
+  taxRtD?: number; // Tax Rate D
+  taxAmtA?: number; // Tax Amount A
+  taxAmtB?: number; // Tax Amount B
+  taxAmtC?: number; // Tax Amount C
+  taxAmtD?: number; // Tax Amount C
+  totTaxblAmt?: number; // Total Taxable Amount
+  totTaxAmt?: number; // Total Tax Amount
+  totAmt?: number; // Total Amount
+  remark?: string; // Remark
   createdAt?: string;
   itemList?: PurchaseSalesTransactionItem[];
 }
@@ -467,122 +452,146 @@ export interface PurchaseSalesTransaction {
 export interface PurchaseSalesTransactionItem {
   id?: number; // auto increment
   purchaseSalesTransactionId?: number; // Purchase Sales Transaction Id
-  itemSeq?: number  // Item Sequence Number
-  itemClsCd?: string  // Item Classification code
-  itemCd?: string  // Item code
-  itemNm?:  string   // Item Name
-  bcd?:     string   // Barcode
-  pkgUnitCd?: string // Package unity Code
-  pkg?: number;   // package
-  qtyUnitCd?: string // Quantity Unity Code
-  qty?:   number // Quantity
-  prc?: number // unit Price
-  splyAmt?: number // supply Ammount
-  dcRt?: number  // Discount Rate
-  dcAmt?: number // Discount Amount
-  taxTyCd?: string  // Tax Type Code
-  taxblAmt?: number  // Taxable Amount
-  taxAmt?: number  // Tax Amount
-  totAmt?:  number  //total amount   // duplicate column
+  itemSeq?: number; // Item Sequence Number
+  itemClsCd?: string; // Item Classification code
+  itemCd?: string; // Item code
+  mappedProductId?: string;
+  itemNm?: string; // Item Name
+  bcd?: string; // Barcode
+  pkgUnitCd?: string; // Package unity Code
+  pkg?: number; // package
+  qtyUnitCd?: string; // Quantity Unity Code
+  qty?: number; // Quantity
+  prc?: number; // unit Price
+  splyAmt?: number; // supply Ammount
+  dcRt?: number; // Discount Rate
+  dcAmt?: number; // Discount Amount
+  taxTyCd?: string; // Tax Type Code
+  taxblAmt?: number; // Taxable Amount
+  taxAmt?: number; // Tax Amount
+  totAmt?: number; //total amount   // duplicate column
   createdAt?: string;
 }
 
 export const PurchaseSalesTransactionColumns = (
-  handleChangeStatus: (purchaseSalesTransaction: PurchaseSalesTransaction) => void,
-  pchsSttsCd: Array<{cd: string, cdNm: string}>
+  handleChangeStatus: (
+    purchaseSalesTransaction: PurchaseSalesTransaction
+  ) => void,
+  pchsSttsCd: Array<{ cd: string; cdNm: string }>,
+  products: Product[],
+  onUpdate: (
+    items: (PurchaseSalesTransactionItem & { mappedProductId: string })[]
+  ) => void,
+  openMappingDialog: (purchaseSalesTransaction: PurchaseSalesTransaction) => void
 ): ColumnDef<PurchaseSalesTransaction>[] => [
   {
     accessorKey: "id",
     header: ({ column }) => {
       return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       const isPurchase = row.original.prcOrdCd === "PURCHASE";
       const receiptType = row.original.rcptTyCd;
-      
+
       return (
         <div className="flex items-center gap-2">
           <div className="font-mono font-medium">#{row.getValue("id")}</div>
-          <Badge 
-            variant={receiptType === "S" ? "default" : "secondary"} 
+          <Badge
+            variant={receiptType === "S" ? "default" : "secondary"}
             className="text-xs"
           >
             {receiptType === "S" ? "SALE" : "PURCHASE"}
           </Badge>
         </div>
-      )
+      );
     },
   },
 
   {
     accessorKey: "regTyCd",
-    header: 'Reg Type',
+    header: "Reg Type",
     cell: ({ row }) => {
       const regTyCd = row.getValue("regTyCd") as string;
-      
+
       return (
         <div className="flex items-center gap-2">
-          <Badge 
-            variant={regTyCd === "A" ? "outline" : "secondary"} 
+          <Badge
+            variant={regTyCd === "A" ? "outline" : "secondary"}
             className="text-xs"
           >
-            {(regTyCd !== null && regTyCd !== "") ? (regTyCd === "A" ? "Automatic" : "Manual") : "No type"}
+            {regTyCd !== null && regTyCd !== ""
+              ? regTyCd === "A"
+                ? "Automatic"
+                : "Manual"
+              : "No type"}
           </Badge>
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "pchsSttsCd",
-    header: 'Status',
+    header: "Status",
     cell: ({ row }) => {
       const pchsStt = row.getValue("pchsSttsCd") as string;
-      
+
       return (
         <div className="flex items-center gap-2 whitespace-nowrap">
-          <Badge 
-            variant={(pchsStt !== "" || pchsStt !== null) ? "default" : "destructive"} 
+          <Badge
+            variant={
+              pchsStt !== "" || pchsStt !== null ? "default" : "destructive"
+            }
             className="text-xs"
           >
-            {
-              (pchsStt !== null && pchsStt !== "") ? pchsSttsCd.find((st) => st.cd === pchsStt)?.cdNm : "Not Set"
-            }
+            {pchsStt !== null && pchsStt !== ""
+              ? pchsSttsCd.find((st) => st.cd === pchsStt)?.cdNm
+              : "Not Set"}
           </Badge>
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "salesDt",
     header: ({ column }) => {
       return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Transaction Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       const dateStr = row.getValue("salesDt") as string;
       const date = dateStr ? new Date(dateStr) : null;
-      
+
       return (
         <div className="flex flex-col">
           {date ? (
             <>
-              <div className="font-medium">{DateTimeHelper.formatInZone(date, 'MMM dd, yyyy')}</div>
-              <div className="text-xs text-muted-foreground">{format(date, "HH:mm")}</div>
+              <div className="font-medium">
+                {DateTimeHelper.formatInZone(date, "MMM dd, yyyy")}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {format(date, "HH:mm")}
+              </div>
             </>
           ) : (
             <div className="text-muted-foreground">N/A</div>
           )}
         </div>
-      )
+      );
     },
   },
   {
@@ -590,17 +599,20 @@ export const PurchaseSalesTransactionColumns = (
     header: "Confirmed Date",
     cell: ({ row }) => {
       const dateStr = row.original.cfmDt;
-      if (!dateStr) return <div className="text-muted-foreground">Not confirmed</div>;
-      
+      if (!dateStr)
+        return <div className="text-muted-foreground">Not confirmed</div>;
+
       const date = new Date(dateStr);
       return (
         <div className="flex flex-col">
-          <div className="font-medium whitespace-nowrap">{format(date, "MMM dd, yyyy")}</div>
+          <div className="font-medium whitespace-nowrap">
+            {format(date, "MMM dd, yyyy")}
+          </div>
           <Badge variant="outline" className="text-xs w-fit">
             Confirmed
           </Badge>
         </div>
-      )
+      );
     },
   },
   {
@@ -609,10 +621,8 @@ export const PurchaseSalesTransactionColumns = (
     cell: ({ row }) => {
       const invoiceNo = row.original.spplrInvcNo;
       return (
-        <div className="font-mono">
-          {invoiceNo ? `#${invoiceNo}` : "N/A"}
-        </div>
-      )
+        <div className="font-mono">{invoiceNo ? `#${invoiceNo}` : "N/A"}</div>
+      );
     },
   },
   {
@@ -620,7 +630,7 @@ export const PurchaseSalesTransactionColumns = (
     header: "Supplier Information",
 
     cell: ({ row }) => {
-      const receiptType = row.original.rcptTyCd;      
+      const receiptType = row.original.rcptTyCd;
       return (
         <div className="space-y-1">
           <div className="font-medium">{row.original.spplrNm || "Unknown"}</div>
@@ -640,7 +650,7 @@ export const PurchaseSalesTransactionColumns = (
             </div>
           )}
         </div>
-      )
+      );
     },
   },
   {
@@ -649,30 +659,36 @@ export const PurchaseSalesTransactionColumns = (
     cell: ({ row }) => {
       const receiptType = row.original.rcptTyCd;
       const paymentType = row.original.pmtTyCd;
-      
+
       const receiptTypeLabels: Record<string, string> = {
-        "S": "Sale",
-        "P": "Purchase"
+        S: "Sale",
+        P: "Purchase",
       };
-      
-      
+
       return (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              Type: {receiptTypeLabels[receiptType || ""] || receiptType || "N/A"}
+              Type:{" "}
+              {receiptTypeLabels[receiptType || ""] || receiptType || "N/A"}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              Payment: {PaymentMethodCodeClassification.find((py) => py.code === paymentType)?.codeName || paymentType || "N/A"}
+              Payment:{" "}
+              {PaymentMethodCodeClassification.find(
+                (py) => py.code === paymentType
+              )?.codeName ||
+                paymentType ||
+                "N/A"}
             </Badge>
           </div>
           {row.original.stockRlsDt && (
             <div className="text-xs text-muted-foreground">
-              Stock Release: {format(new Date(row.original.stockRlsDt), "MMM dd")}
+              Stock Release:{" "}
+              {format(new Date(row.original.stockRlsDt), "MMM dd")}
             </div>
           )}
         </div>
-      )
+      );
     },
   },
   {
@@ -681,12 +697,15 @@ export const PurchaseSalesTransactionColumns = (
   cell: ({ row }) => {
     const itemList = row.original.itemList || [];
     const itemCount = row.original.totItemCnt || 0;
-    const transactionId = row.original.id || 0;
-    
-    const trigger = (
-      <div className="space-y-2 cursor-pointer hover:bg-accent/50 p-2 rounded-lg transition-colors">
+    const transaction = row.original;
+
+    return (
+      <div
+        className="space-y-2 cursor-pointer hover:bg-accent/50 p-2 rounded-lg transition-colors"
+        onClick={() => openMappingDialog(transaction)}
+      >
         <div className="font-medium">
-          {itemCount} Item{itemCount !== 1 ? 's' : ''}
+          {itemCount} Item{itemCount !== 1 ? "s" : ""}
         </div>
         {itemList.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -702,56 +721,51 @@ export const PurchaseSalesTransactionColumns = (
             )}
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground">
-            No item details
-          </div>
+          <div className="text-sm text-muted-foreground">No item details</div>
         )}
         {itemList.length > 0 && (
           <div className="text-xs text-primary font-medium">
-            Click to view all items →
+            Click to view and Map all items →
           </div>
         )}
       </div>
     );
-
-    return (
-      <ItemsDialog
-        items={itemList}
-        trigger={trigger}
-        transactionId={transactionId}
-        totalItems={itemCount}
-      />
-    )
   },
 },
   {
     accessorKey: "totTaxblAmt",
     header: ({ column }) => {
       return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Taxable Amount
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       const amount = row.getValue("totTaxblAmt") as number;
       return (
         <div className="text-right font-medium">
-          {amount?.toLocaleString('en-US')} RWF
+          {amount?.toLocaleString("en-US")} RWF
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "totTaxAmt",
     header: ({ column }) => {
       return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Tax Amount
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       const amount = row.getValue("totTaxAmt") as number;
@@ -759,44 +773,49 @@ export const PurchaseSalesTransactionColumns = (
         { rate: row.original.taxRtA, amount: row.original.taxAmtA },
         { rate: row.original.taxRtB, amount: row.original.taxAmtB },
         { rate: row.original.taxRtC, amount: row.original.taxAmtC },
-        { rate: row.original.taxRtD, amount: row.original.taxAmtD }
-      ].filter(r => r.rate !== undefined && r.amount !== undefined);
+        { rate: row.original.taxRtD, amount: row.original.taxAmtD },
+      ].filter((r) => r.rate !== undefined && r.amount !== undefined);
 
       return (
         <div className="text-right space-y-1">
-          <div className="font-bold">{amount?.toLocaleString('en-US')} RWF</div>
+          <div className="font-bold">{amount?.toLocaleString("en-US")} RWF</div>
           {rates.length > 0 && (
             <div className="text-xs text-muted-foreground">
               {rates.map((r, i) => `${r.rate}%`).join(", ")}
             </div>
           )}
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "totAmt",
     header: ({ column }) => {
       return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
           Total Amount
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       const amount = row.getValue("totAmt") as number;
       const taxAmount = row.original.totTaxAmt || 0;
       const taxableAmount = row.original.totTaxblAmt || 0;
-      
+
       return (
         <div className="text-right">
-          <div className="font-bold text-lg">{amount?.toLocaleString('en-US')} RWF</div>
+          <div className="font-bold text-lg">
+            {amount?.toLocaleString("en-US")} RWF
+          </div>
           <div className="text-xs text-muted-foreground">
-            Tax: {taxAmount.toLocaleString('en-US')} RWF
+            Tax: {taxAmount.toLocaleString("en-US")} RWF
           </div>
         </div>
-      )
+      );
     },
   },
   {
@@ -805,15 +824,21 @@ export const PurchaseSalesTransactionColumns = (
     cell: ({ row }) => {
       const receiptType = row.original.rcptTyCd;
       const label = receiptType === "S" ? "Customer" : "Buyer";
-      
+
       return (
         <div className="space-y-1">
-          <div className="font-medium">{label} <span className="whitespace-nowrap"> TIN: {row.original.tin || "N/A"}</span></div>
+          <div className="font-medium">
+            {label}{" "}
+            <span className="whitespace-nowrap">
+              {" "}
+              TIN: {row.original.tin || "N/A"}
+            </span>
+          </div>
           <div className="text-xs text-muted-foreground">
             Branch: {row.original.bhfId || "00"}
           </div>
         </div>
-      )
+      );
     },
   },
   {
@@ -822,28 +847,37 @@ export const PurchaseSalesTransactionColumns = (
     cell: ({ row }) => {
       const dateStr = row.original.createdAt;
       if (!dateStr) return null;
-      
+
       const date = new Date(dateStr);
       return (
         <div className="text-sm text-muted-foreground whitespace-nowrap">
           {format(date, "MMM dd, yyyy HH:mm aa")}
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "actions",
     header: "Actions",
     enableHiding: false,
+
     cell: ({ row }) => {
       const transaction = row.original;
-      const router = useRouter();
       const receiptType = transaction.rcptTyCd;
-      const isSale = receiptType === "S";
+      const pchsStt = row.getValue("pchsSttsCd") as string;
 
       return (
-        <Button variant={"default"} size={"sm"} className="cursor-pointer " onClick={()=>handleChangeStatus(row.original)}>Change Status</Button>
-      )
+        <Button
+          variant={pchsStt === "02" ? "default" : pchsStt === "04" ? "destructive" : "outline"}
+          size={"sm"}
+          className="cursor-pointer "
+          onClick={() => pchsStt !== "02" ? handleChangeStatus(row.original) : {}}
+        >
+          {
+            pchsStt === "02" ? "Approved" : pchsStt === "04" ? "Rejected" : "Pending"
+          }
+        </Button>
+      );
     },
   },
 ];

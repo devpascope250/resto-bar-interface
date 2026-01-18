@@ -43,9 +43,10 @@ export async function POST(req: NextRequest) {
         );
        
         const data = await purchasesItems.json();
+        console.log(data);
         
         if (purchasesItems.status !== 200) {
-            return NextResponse.json({ message: data.message ?? data?.error?.resultMsg ?? data?.resultMsg }, { status: 500 });
+            return NextResponse.json({ message: data.message ?? data?.error?.resultMsg ?? data?.resultMsg  ?? data.message.message  }, { status: 500 });
         } else {
             return NextResponse.json({ message: data.message ?? data?.resultMsg }, { status: 200 });
         }

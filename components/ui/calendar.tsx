@@ -19,9 +19,15 @@ function Calendar({
   buttonVariant = 'ghost',
   formatters,
   components,
+  showStartEndLabels = false, // Add this prop
+  startLabel = 'From',        // Add this prop
+  endLabel = 'To',            // Add this prop
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>['variant']
+  showStartEndLabels?: boolean
+  startLabel?: string
+  endLabel?: string
 }) {
   const defaultClassNames = getDefaultClassNames()
 
@@ -155,7 +161,14 @@ function Calendar({
             <ChevronDownIcon className={cn('size-4', className)} {...props} />
           )
         },
-        DayButton: CalendarDayButton,
+        DayButton: (dayProps) => (
+          <CalendarDayButton
+            {...dayProps}
+            showStartEndLabels={showStartEndLabels}
+            startLabel={startLabel}
+            endLabel={endLabel}
+          />
+        ),
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
@@ -172,12 +185,20 @@ function Calendar({
   )
 }
 
+// Custom CalendarDayButton with labels
 function CalendarDayButton({
   className,
   day,
   modifiers,
+  showStartEndLabels = false, // Default to false (no labels)
+  startLabel = 'From', // Default label text
+  endLabel = 'To', // Default label text
   ...props
-}: React.ComponentProps<typeof DayButton>) {
+}: React.ComponentProps<typeof DayButton> & {
+  showStartEndLabels?: boolean
+  startLabel?: string
+  endLabel?: string
+}) {
   const defaultClassNames = getDefaultClassNames()
 
   const ref = React.useRef<HTMLButtonElement>(null)
@@ -201,12 +222,33 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70',
+        'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70 relative',
         defaultClassNames.day,
         className,
       )}
       {...props}
-    />
+    >
+      {/* Date number */}
+      <span className="z-10">{day.date.getDate()}</span>
+      
+      {/* Subtle label for start date (only shown when enabled) */}
+      {showStartEndLabels && modifiers.range_start && (
+        <div className="absolute top-0 left-0 right-0 flex justify-center">
+          <span className="text-[10px] font-semibold bg-blue-500 text-white px-1.5 py-0.5 rounded-b-md shadow-sm">
+            {startLabel}
+          </span>
+        </div>
+      )}
+      
+      {/* Subtle label for end date (only shown when enabled) */}
+      {showStartEndLabels && modifiers.range_end && (
+        <div className="absolute top-0 left-0 right-0 flex justify-center">
+          <span className="text-[10px] font-semibold bg-green-500 text-white px-1.5 py-0.5 rounded-b-md shadow-sm">
+            {endLabel}
+          </span>
+        </div>
+      )}
+    </Button>
   )
 }
 

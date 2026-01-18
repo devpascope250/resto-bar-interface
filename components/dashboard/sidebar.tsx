@@ -24,6 +24,8 @@ import {
   FileText,
   Bell,
   MessageSquare,
+  PackageX,
+  PackagePlusIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { Button } from "@/components/ui/button";
@@ -124,16 +126,17 @@ const managerNavigationSections = [
 const adminNavigation = [
   { name: "Orders", href: "/dashboard/bar/partner/orders", icon: ShoppingCart },
   { name: "Products", href: "/dashboard/bar/partner/products", icon: Package },
+  { name: "Migrated Products", href: "/dashboard/bar/partner/products/migrated", icon: PackagePlusIcon },
   {
     name: "Catalog",
     href: "/dashboard/bar/partner/catalog",
     icon: ShoppingBag,
   },
-  {
-    name: "Stock In",
-    href: "/dashboard/bar/partner/stock-in",
-    icon: PackagePlus,
-  },
+  // {
+  //   name: "Stock In",
+  //   href: "/dashboard/bar/partner/stock-in",
+  //   icon: PackagePlus,
+  // },
   {
     name: "Inventory Report",
     href: "/dashboard/bar/partner/inventory-report",

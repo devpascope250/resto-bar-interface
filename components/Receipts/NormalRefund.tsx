@@ -128,7 +128,7 @@ const NormalRefund: React.FC<ReceiptProps> = ({ receiptData }) => {
       <div>
          
         <div>TIN: {clientId}</div>
-        <div>CLIENT NAME: {customerName}</div>
+        <div>NAME: {customerName}</div>
         <div>TEL: {customerMobile}</div>
         <div style={{ borderBottom: "1px dashed #000", margin: "1mm 0" }}></div>
       </div>

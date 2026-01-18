@@ -49,7 +49,11 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   // Date filter props
   onDateFilterChange?: (startDate: Date | null, endDate: Date | null) => void;
+  dateFilterMode?: "RANGE" | "SINGLE";
   showDateFilter?: boolean;
+  showStartEndLabels?: boolean;
+  startLabel?: string;
+  endLabel?: string;
   dateFilterPlaceholder?: string;
   // 👇 New loading prop
   isRefetching?: boolean;
@@ -62,8 +66,12 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = "Search...",
+  dateFilterMode = "RANGE",
   onDateFilterChange,
   showDateFilter = false,
+  showStartEndLabels = false,
+  startLabel = "",
+  endLabel = "",
   dateFilterPlaceholder = "Filter by date",
   isRefetching = false,
   isLoading = false,
@@ -71,7 +79,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -152,7 +160,7 @@ export function DataTable<TData, TValue>({
                       variant="outline"
                       className={cn(
                         "justify-start text-left font-normal",
-                        !startDate && !endDate && "text-muted-foreground"
+                        !startDate && !endDate && "text-muted-foreground",
                       )}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
@@ -170,18 +178,33 @@ export function DataTable<TData, TValue>({
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <div className="flex">
-                      <CalendarComponent
-                        mode="range"
-                        selected={{
-                          from: startDate || undefined,
-                          to: endDate || undefined,
-                        }}
-                        onSelect={(range) => {
-                          setStartDate(range?.from || null);
-                          setEndDate(range?.to || null);
-                        }}
-                        autoFocus
-                      />
+                      {dateFilterMode === "RANGE" ? (
+                        <CalendarComponent
+                          showStartEndLabels={showStartEndLabels}
+                          startLabel={startLabel}
+                          endLabel={endLabel}
+                          mode="range"
+                          selected={{
+                            from: startDate || undefined,
+                            to: endDate || undefined,
+                          }}
+                          onSelect={(range) => {
+                            setStartDate(range?.from || null);
+                            setEndDate(range?.to || null);
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <CalendarComponent
+                          mode="single"
+                          selected={startDate || undefined}
+                          onSelect={(date) => {
+                            setStartDate(date || null);
+                            setEndDate(date || null);
+                          }}
+                          autoFocus
+                        />
+                      )}
                     </div>
                     {(startDate || endDate) && (
                       <div className="p-3 border-t">
@@ -210,13 +233,9 @@ export function DataTable<TData, TValue>({
                 )}
               </div>
             )}
-            {
-              additionalFilters && (
-                <div className="flex items-center gap-2">
-                  {additionalFilters}
-                </div>
-              )
-            }
+            {additionalFilters && (
+              <div className="flex items-center gap-2">{additionalFilters}</div>
+            )}
           </div>
 
           <DropdownMenu>
@@ -267,7 +286,7 @@ export function DataTable<TData, TValue>({
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     );
@@ -286,7 +305,7 @@ export function DataTable<TData, TValue>({
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </TableCell>
                     ))}

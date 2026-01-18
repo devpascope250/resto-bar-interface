@@ -131,44 +131,52 @@ export function ProductCard({
       </div>
 
       <CardContent className="p-4">
-        <h3 className="mb-1 font-semibold text-foreground">{product.name}</h3>
+        <h3 className="mb-1 font-semibold text-foreground">
+          {product.name + " (" + product.taxTyCd + ")"}
+        </h3>
         <p className="mb-3 text-sm text-muted-foreground line-clamp-2">
           {product.description ?? product.beverageCategory?.description ?? ""}
         </p>
-        
 
         <div className="space-y-3">
-  {/* Price Section */}
-  <div className="flex flex-wrap items-center gap-2">
-    {product.discount ? (
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-red-600">
-            {AmountFormat((product.price * (1 - product.discount.rate / 100)).toString())}
-          </span>
-          <span className="text-xs font-semibold bg-red-100 text-red-800 px-2 py-1 rounded-full">
-            -{product.discount.rate}%
-          </span>
-        </div>
-        <span className="text-sm text-muted-foreground line-through">
-          {AmountFormat(product.price.toString())}
-        </span>
-      </div>
-    ) : (
-      <span className="text-xl font-bold text-foreground text-primary">
-        {AmountFormat(product.price.toString(), 0)}
-      </span>
-    )}
-  </div>
+          {/* Price Section */}
+          <div className="flex flex-wrap items-center gap-2">
+            {product.discount ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-red-600">
+                    {AmountFormat(
+                      (
+                        product.price *
+                        (1 - product.discount.rate / 100)
+                      ).toString()
+                    )}
+                  </span>
+                  <span className="text-xs font-semibold bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                    -{product.discount.rate}%
+                  </span>
+                </div>
+                <span className="text-sm text-muted-foreground line-through">
+                  {AmountFormat(product.price.toString())}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xl font-bold text-foreground text-primary">
+                {AmountFormat(product.price.toString(), 0)}
+              </span>
+            )}
+          </div>
 
-  {/* Stock/Type Section */}
-  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-    <Package className="h-4 w-4 flex-shrink-0" />
-    <span>
-      {product.itemTyCd === "3" ? "Service item" : `${product.currentStock} units available`}
-    </span>
-  </div>
-</div>
+          {/* Stock/Type Section */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Package className="h-4 w-4 flex-shrink-0" />
+            <span>
+              {product.itemTyCd === "3"
+                ? "Service item"
+                : `${product.currentStock} units available`}
+            </span>
+          </div>
+        </div>
 
         {/* Quick stock management for admin - always visible */}
         {showAdminOptions && onUpdateStock && (
@@ -225,7 +233,9 @@ export function ProductCard({
             className="w-full"
             onClick={() => onAddToCart?.(product)}
             disabled={
-              product.itemTyCd === "3" ? false : product.currentStock === 0
+              product.itemTyCd === "3"
+                ? false
+                : product.currentStock.toString() === "0"
             }
           >
             <ShoppingCart className="mr-2 h-4 w-4" />

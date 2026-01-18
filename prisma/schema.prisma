@@ -127,17 +127,19 @@ model Partner {
   id           String   @id @default(uuid())
   partnerType   Partnertype
   companyName   String
-  contactEmail String?  @unique
+  contactEmail String? 
   contactPhone String?
   address      String?
   topMsg       String?
   bottomMsg    String?
-  tinNumber    String?  @unique
+  tinNumber    String?
+  bhfId        String?  @default("00")
   apiKey       String?  @unique
   logoUrl      String?
   taxRate      Float?
   mrcCode      String?
   taxStatus    TaxStatus @default(ENABLED)
+  isTaxTypeMigrated   Boolean @default(false)
   status       Status   @default(PENDING)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -145,6 +147,8 @@ model Partner {
   users        User[]
   subscriptions Subscription[]
   @@index([status])
+  // unique with tinNumber and bhfId
+  @@unique([tinNumber, bhfId])
 }
 
 model Packages {

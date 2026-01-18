@@ -131,7 +131,7 @@ const CopySale: React.FC<ReceiptProps> = ({ receiptData }) => {
         {/* <div>REFUND IS APPROVED ONLY FOR</div>
         <div>ORIGINAL SALES RECEIPT</div> */}
         <div>TIN: {clientId}</div>
-        <div>CLIENT NAME: {customerName}</div>
+        <div>NAME: {customerName}</div>
         <div>TEL: {customerMobile}</div>
       </div>
 

@@ -8,7 +8,7 @@ export interface PurchaseSalesTransactionSave {
     orgInvcNo: number;
     spplrBhfId?: string;
     spplrNm?: string;
-    spplrInvcN?: number;
+    spplrInvcNo?: number;
     spplrSdcId?: string;
     regTyCd: string;
     pchsTyCd: string;
@@ -46,8 +46,10 @@ export interface PurchaseSalesTransactionSave {
 }
 
 export interface PurchaseSalesTransactionItemSave{
+    id?: number;
     itemSeq: number;
     itemCd?: string;
+    mappedProductId?: string;
     itemClsCd: string;
     itemNm: string;
     bcd?:  string;
@@ -74,11 +76,11 @@ export class PurchaseTransactionSettings {
             tin: data.tin ?? "",
             bhfId: data.bhfId ?? "",
             spplrTin: data.spplrTin ?? "",
-            invcNo:  1,
+            invcNo: data.spplrInvcNo ?? 0,
             orgInvcNo:  0,
             spplrBhfId: data.spplrBhfId ?? "",
             spplrNm: data.spplrNm ?? "",
-            spplrInvcN: data.spplrInvcNo ?? 0,
+            spplrInvcNo: data.spplrInvcNo ?? 0,
             spplrSdcId: "",
             regTyCd: "A",
             pchsTyCd: "N",
@@ -114,8 +116,10 @@ export class PurchaseTransactionSettings {
             modrId: 'admin',
             itemList: data?.itemList?.map((item) => {
                 return {
+                    id: item.id ?? 0,
                     itemSeq: item.itemSeq ?? 0,
                     itemCd: item.itemCd ?? "",
+                    mappedProductId: item.mappedProductId ?? "",
                     itemClsCd: item.itemClsCd ?? "",
                     itemNm: item.itemNm ?? "",
                     bcd: item.bcd ?? "",

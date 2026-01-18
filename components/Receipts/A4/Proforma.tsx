@@ -97,9 +97,11 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
           {/* Center Content */}
           <div className="text-center leading-tight">
             <DisplayMessage message={commercialMessage ?? ""} />
-            <div className="text-[14px] font-bold text-center mt-6"> {/* Tailwind classes */}
-          PROFORMA
-        </div>
+            <div className="text-[14px] font-bold text-center mt-6">
+              {" "}
+              {/* Tailwind classes */}
+              PROFORMA
+            </div>
           </div>
           {/* Right Logo */}
           <div className="flex justify-end pt-1">
@@ -166,7 +168,7 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
 
                 <td className="border-l border-r border-black p-1">
                   {item.name}
-                   {item.discount ? (
+                  {item.discount ? (
                     <div
                       style={{
                         display: "flex",
@@ -196,8 +198,13 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
                 <td className="border-l border-r border-black p-1 text-right">
                   {AmountFormat(item.total.toString(), 2, false)}
                   {item.discount ? (
-                    <span><br />
-                      {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    <span>
+                      <br />
+                      {AmountFormat(
+                        (item.total * (1 - item.discount / 100)).toString(),
+                        2,
+                        false
+                      )}
                     </span>
                   ) : (
                     ""
@@ -224,7 +231,7 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
         <div
           style={{ fontSize: "14px", fontWeight: "bold", textAlign: "center" }}
         >
-        THIS IS NOT AN OFFICIAL RECEIPT
+          THIS IS NOT AN OFFICIAL RECEIPT
         </div>
 
         {/* ================= BOTTOM SECTION ================= */}
@@ -271,7 +278,7 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
                   <tr>
                     <td className="border border-black p-1">Total Rwf</td>
                     <td className="border border-black p-1 text-right">
-                      {AmountFormat(totals.total.toString(),2, false)}
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   {totals.totalAEx ? (
@@ -330,6 +337,12 @@ const Proforma: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
                       {AmountFormat(totals.totalTax.toString(), 2, false)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">{payment.method}</td>
+                    <td className="border border-black p-1 text-right">
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>

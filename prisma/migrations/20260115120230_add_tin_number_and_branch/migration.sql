@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `partner` MODIFY `bhfId` VARCHAR(191) NULL DEFAULT '00';

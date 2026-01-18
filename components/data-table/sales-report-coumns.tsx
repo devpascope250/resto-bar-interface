@@ -337,12 +337,13 @@ export const SalesTransactionColumns: ColumnDef<SalesTransaction>[] = [
       );
 
       return (
-        <ItemsDialog
-          items={itemList}
-          trigger={trigger}
-          transactionId={row.original.invcNo || 0}
-          totalItems={totalItems}
-        />
+          // <ItemsDialog
+          //   items={itemList}
+          //   trigger={trigger}
+          //   transactionId={row.original.invcNo || 0}
+          //   totalItems={totalItems}
+          // />
+          <></>
       );
     },
   },

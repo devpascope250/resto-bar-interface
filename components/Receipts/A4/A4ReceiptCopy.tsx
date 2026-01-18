@@ -443,8 +443,13 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                 <td className="border-l border-r border-black p-1 text-right">
                   {AmountFormat(item.total.toString(), 2, false)}
                   {item.discount ? (
-                    <span><br />
-                      {AmountFormat((item.total * (1 - item.discount / 100)).toString(), 2, false)}
+                    <span>
+                      <br />
+                      {AmountFormat(
+                        (item.total * (1 - item.discount / 100)).toString(),
+                        2,
+                        false
+                      )}
                     </span>
                   ) : (
                     ""
@@ -572,7 +577,7 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <tr>
                       <td className="border border-black p-1">Total A Ex</td>
                       <td className="border border-black p-1 text-right">
-                        {AmountFormat(totals.totalAEx.toString(),2, false)}
+                        {AmountFormat(totals.totalAEx.toString(), 2, false)}
                       </td>
                     </tr>
                   ) : (
@@ -625,6 +630,12 @@ const A4ReceiptCopy: React.FC<ReceiptProps> = ({ receiptData }) => {
                     <td className="border border-black p-1">Total Tax</td>
                     <td className="border border-black p-1 text-right">
                       {AmountFormat(totals.totalTax.toString(), 2, false)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">{payment.method}</td>
+                    <td className="border border-black p-1 text-right">
+                      {AmountFormat(totals.total.toString(), 2, false)}
                     </td>
                   </tr>
                   <tr>
