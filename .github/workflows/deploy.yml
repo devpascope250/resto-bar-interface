@@ -45,7 +45,7 @@ jobs:
           username: quicko
           key: ${{ secrets.QUICKO_SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/quicko.rw
+            cd /var/www/quicko.rw/resto-bar-interface
 
             # Ensure repo is on main branch and up-to-date
             git checkout main
@@ -53,12 +53,12 @@ jobs:
             git reset --hard origin/main
 
             # Install dependencies
-            npm install
+            npm install --legacy-peer-deps
 
             # Build Next.js
             npm run build
 
             # Start or reload PM2
-            pm2 describe quicko.rw || pm2 start npm --name quicko.rw -- start
-            pm2 restart quicko.rw --update-env
+            pm2 describe resto-bar-interface || pm2 start npm --name resto-bar-interface -- start
+            pm2 restart resto-bar-interface --update-env
             pm2 save
